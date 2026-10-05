@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLAYER 1 // PORTFOLIO MISSIONS</title>
+    <!-- 引入 Google Fonts: Orbitron (賽博字體), Share Tech Mono (復古Terminal), Noto Sans TC (繁中) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. CSS 全局變數與基礎設定 (Y2K / Cyberpunk 配色)
+           ========================================================================== */
+        :root {
+            --bg-dark: #090713;
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff0055;
+            --neon-purple: #a100ff;
+            --neon-green: #00ff66;
+            --glass-bg: rgba(22, 18, 42, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --locked-bg: rgba(14, 13, 22, 0.65);
+            --text-main: #e2f1ff;
+            --text-dim: #6c7893;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Share Tech Mono', 'Noto Sans TC', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 賽博龐克背景網格與螢光點陣 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 50% 20%, rgba(161, 0, 255, 0.15), transparent 70%),
+                radial-gradient(circle at 80% 80%, rgba(0, 243, 255, 0.1), transparent 60%),
+                linear-gradient(rgba(9, 7, 19, 0.85), rgba(9, 7, 19, 0.85)),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255, 0, 85, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        /* CRT 螢幕掃描線 (Scanline) 特效 */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.25),
+                rgba(0, 0, 0, 0.25) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.6;
+        }
+
+        /* 主頁面佈局容器 */
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* ==========================================================================
+           2. 個人資訊與玩家面板 (Header & Avatar Section)
+           ========================================================================== */
+        .profile-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 35px 40px;
+            margin: 10px 0 35px 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 30px rgba(161, 0, 255, 0.25), inset 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        /* 系統狀態標籤 */
+        .profile-card::before {
+            content: "SYSTEM READY // PLAYER_01";
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            font-size: 0.75rem;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            opacity: 0.85;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 大頭貼旋轉霓虹光圈 */
+        .avatar-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 18px;
+            margin-top: 10px;
+        }
+
+        .avatar-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--neon-cyan), var(--neon-magenta), var(--neon-purple), var(--neon-cyan));
+            animation: spinRing 4s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes spinRing {
+            100% { transform: rotate(360deg); }
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--bg-dark);
+            background-color: #16122a;
+        }
+
+        /* 玩家名稱與副標題 */
+        .player-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #ffffff, var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .player-sub {
+            color: var(--neon-magenta);
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            margin-bottom: 22px;
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* 闖關進度條區塊 */
+        .progress-box {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 18px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            width: 12.5%; /* 2 / 16 完成度 */
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+            box-shadow: 0 0 12px var(--neon-green);
+            border-radius: 6px;
+            transition: width 1s ease-in-out;
+        }
+
+        /* ==========================================================================
+           3. 16 個按鈕關卡網格 (Mission Grid)
+           ========================================================================== */
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4x4 網格 */
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        /* 關卡卡片通用樣式 */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 22px 18px;
+            min-height: 135px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .card-level {
+            font-size: 0.75rem;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 12px 0;
+            line-height: 1.4;
+        }
+
+        .card-status {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 已解鎖卡片樣式 (Unlocked) */
+        .card.unlocked {
+            border-color: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        /* 微光過場動畫 */
+        .card.unlocked::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.18), transparent);
+            transition: 0.6s;
+        }
+
+        .card.unlocked:hover::before {
+            left: 100%;
+        }
+
+        /* 已解鎖懸停 Hover 特效 */
+        .card.unlocked:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.45), inset 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .card.unlocked .card-level {
+            color: var(--neon-cyan);
+        }
+
+        .card.unlocked .card-title {
+            color: #ffffff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+        }
+
+        .card.unlocked:hover .card-title {
+            color: var(--neon-cyan);
+        }
+
+        /* 呼吸燈綠點標誌 */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-green);
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* 未解鎖卡片樣式 (Locked) */
+        .card.locked {
+            background: var(--locked-bg);
+            border-color: rgba(255, 255, 255, 0.05);
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(80%);
+        }
+
+        .card.locked:hover {
+            transform: none;
+            border-color: rgba(255, 0, 85, 0.4);
+            box-shadow: 0 0 18px rgba(255, 0, 85, 0.25);
+            opacity: 0.75;
+        }
+
+        .card.locked .card-title {
+            color: var(--text-dim);
+        }
+
+        .lock-icon {
+            font-size: 1.1rem;
+            margin-right: 2px;
+        }
+
+        /* 頁尾資訊 */
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+        }
+
+        /* ==========================================================================
+           4. 響應式佈局 (Responsive Design for Mobile & Tablet)
+           ========================================================================== */
+        @media (max-width: 992px) {
+            .mission-grid {
+                grid-template-columns: repeat(3, 1fr); /* 平板：3列 */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mission-grid {
+                grid-template-columns: repeat(2, 1fr); /* 手機：2列 */
+                gap: 14px;
+            }
+
+            .profile-card {
+                padding: 25px 20px;
+            }
+
+            .player-title {
+                font-size: 1.5rem;
+            }
+
+            .card {
+                min-height: 120px;
+                padding: 16px 14px;
+            }
+
+            .card-title {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mission-grid {
+                grid-template-columns: 1fr; /* 極小螢幕：1列 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 1. 個人資訊與闖關進度區 -->
+        <header class="profile-card">
+            <div class="avatar-wrapper">
+                <!-- 預設假圖片大頭貼 (可替換為個人照片檔名，如: avatar.jpg) -->
+                <img class="avatar-img" src="https://placehold.co/200x200/100c2a/00f3ff?text=PLAYER+1" alt="Student Avatar" id="userAvatar">
+            </div>
+            
+            <!-- 學生名字與作品集稱號 -->
+            <h1 class="player-title">PLAYER: Rendy Cheen </h1>
+            <p class="player-sub">網頁程式設計 // 16 週闖關作品集</p>
+
+            <!-- 闖關進度條 (2/16 COMPLETED) -->
+            <div class="progress-box">
+                <div class="progress-header">
+                    <span>MISSION PROGRESS</span>
+                    <span>2 / 16 COMPLETED (12.5%)</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. 16 個關卡按鈕網格 (Grid Layout) -->
+        <main class="mission-grid">
+
+            <!-- Week 1 - 已解鎖 -->
+            <a href="w1/index.html" class="card unlocked">
+                <div class="card-level">
+                    <span>LEVEL 01</span>
+                    <span class="status-dot"></span>
+                </div>
+                <div class="card-title">Week 1 - 數位名片</div>
+                <div class="card-status">
+                    <span style="color: var(--neon-cyan);">[ UNLOCKED ]</span>
+                </div>
+            </a>
+
+            <!-- Week 2 - 已解鎖 -->
+            <a href="w2/index.html" class="card unlocked">
+                <div class="card-level">
+                    <span>LEVEL 02</span>
+                    <span class="status-dot"></span>
+                </div>
+                <div class="card-title">Week 2 - 今天吃甚麼?</div>
+                <div class="card-status">
+                    <span style="color: var(--neon-cyan);">[ UNLOCKED ]</span>
+                </div>
+            </a>
+
+            <!-- 
+                ========================================================================
+                Week 3 ~ 16 (未解鎖按鈕)
+                後續週數解鎖方式：
+                1. 將 class="card locked" 改為 class="card unlocked"
+                2. 將 href="#" 改為對應路徑 (如 href="w3/index.html")
+                3. 將標題修改為該週作業名稱，並替換狀態標籤
+                ========================================================================
+            -->
+
+            <!-- Week 3 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 03</div>
+                <div class="card-title">Week 3 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 4 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 04</div>
+                <div class="card-title">Week 4 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 5 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 05</div>
+                <div class="card-title">Week 5 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 6 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 06</div>
+                <div class="card-title">Week 6 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 7 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 07</div>
+                <div class="card-title">Week 7 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 8 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 08</div>
+                <div class="card-title">Week 8 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 9 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 09</div>
+                <div class="card-title">Week 9 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 10 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 10</div>
+                <div class="card-title">Week 10 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 11 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 11</div>
+                <div class="card-title">Week 11 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 12 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 12</div>
+                <div class="card-title">Week 12 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 13 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 13</div>
+                <div class="card-title">Week 13 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 14 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 14</div>
+                <div class="card-title">Week 14 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 15 - 未解鎖 -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 15</div>
+                <div class="card-title">Week 15 - 鎖定中</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+            <!-- Week 16 - 未解鎖 (期末專題) -->
+            <a href="#" class="card locked" onclick="event.preventDefault();">
+                <div class="card-level">LEVEL 16</div>
+                <div class="card-title">Week 16 - 期末專題</div>
+                <div class="card-status"><span class="lock-icon">🔒</span> [ LOCKED ]</div>
+            </a>
+
+        </main>
+
+        <!-- 頁尾宣告 -->
+        <footer>
+            <p>&copy; 2026 WEB PROGRAMMING PORTFOLIO. ALL RIGHTS RESERVED.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
