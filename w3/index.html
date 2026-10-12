@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Meme Generator | 賽博朋克迷因產生器</title>
+
+    <!-- Google Fonts: Anton (Classic Meme Style) & Noto Sans TC for Chinese Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+TC:wght@700;900&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- html2canvas Library for Image Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neonPink: '#ff007f',
+                        neonCyan: '#00f3ff',
+                        neonPurple: '#8a2be2',
+                        cyberDark: '#0a0a12',
+                        cyberCard: '#131326',
+                    },
+                    fontFamily: {
+                        cyber: ['Orbitron', 'sans-serif'],
+                        meme: ['Anton', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #080811;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(0, 243, 255, 0.15) 0%, transparent 40%);
+            color: #e2e8f0;
+            font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Neon Glow Effect - 霓光視覺效果 */
+        .neon-border-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4), inset 0 0 10px rgba(255, 0, 127, 0.2);
+            border: 1px solid rgba(255, 0, 127, 0.6);
+        }
+
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
+            border: 1px solid rgba(0, 243, 255, 0.6);
+        }
+
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Glassmorphism Control Panel - 玻璃擬態控制面板 */
+        .glass-panel {
+            background: rgba(19, 19, 38, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Meme Classic Text Outline - 經典迷因文字黑邊 */
+        .meme-text {
+            font-family: 'Anton', 'Noto Sans TC', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 
+                -3px -3px 0 #000,  
+                 3px -3px 0 #000,
+                -3px  3px 0 #000,
+                 3px  3px 0 #000,
+                -2px 0px 0 #000,
+                 2px 0px 0 #000,
+                 0px -2px 0 #000,
+                 0px  2px 0 #000,
+                 0 0 10px rgba(0,0,0,0.8);
+            word-wrap: break-word;
+            line-height: 1.1;
+        }
+
+        /* Custom Range Slider Style - 自訂滑桿樣式 */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1a1a3a;
+            border-radius: 8px;
+            height: 8px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #ff007f;
+            box-shadow: 0 0 10px #ff007f;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col justify-between items-center">
+
+    <!-- Header / 標頭欄位 -->
+    <header class="w-full max-w-6xl mb-6 text-center">
+        <h1 class="text-3xl md:text-5xl font-extrabold font-cyber tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-neonPink via-purple-400 to-neonCyan neon-text-cyan">
+            <i class="fa-solid font-cyber fa-bolt text-neonPink mr-2"></i>MEME GENERATOR 2077
+        </h1>
+        <p class="text-xs md:text-sm text-cyan-300/80 mt-2 tracking-widest uppercase">
+            自定義迷因產生器 | Pembuat Meme Kustom
+        </p>
+    </header>
+
+    <!-- Main Application Container / 主應用程式容器 -->
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- LEFT PANEL: Controls / 左側控制面板 (Panel Kontrol) -->
+        <section class="lg:col-span-5 glass-panel p-6 rounded-2xl neon-border-cyan flex flex-col gap-5">
+            <h2 class="text-lg font-bold font-cyber text-neonCyan flex items-center gap-2 border-b border-cyan-500/30 pb-3">
+                <i class="fa-solid fa-sliders"></i> CONTROLS / 控制面板
+            </h2>
+
+            <!-- 1. Local Image Upload Input / 上傳圖片 (Unggah Gambar) -->
+            <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider flex justify-between">
+                    <span>1. Upload Background / 上傳圖片</span>
+                    <span class="text-gray-400 font-normal">Local File / 本機檔案</span>
+                </label>
+                <div class="relative border-2 border-dashed border-cyan-500/50 hover:border-neonPink transition-colors duration-300 rounded-xl p-4 text-center cursor-pointer bg-cyberDark/60 group">
+                    <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-neonCyan group-hover:text-neonPink transition-colors"></i>
+                        <span class="text-xs text-gray-300 font-medium">Click or Drag & Drop image here</span>
+                        <span class="text-[10px] text-gray-500">點擊或拖曳上傳圖片 (Pilih Gambar)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Text Inputs / 雙層文字輸入 (Input Teks) -->
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label for="topTextInput" class="text-xs font-semibold text-gray-300 uppercase tracking-wider block mb-1">
+                        Top Text / 上方文字 (Teks Atas)
+                    </label>
+                    <input type="text" id="topTextInput" placeholder="WHEN YOU WRITE CODE..." 
+                        class="w-full bg-cyberDark/80 border border-purple-500/40 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-neonCyan transition-all shadow-inner">
+                </div>
+
+                <div>
+                    <label for="bottomTextInput" class="text-xs font-semibold text-gray-300 uppercase tracking-wider block mb-1">
+                        Bottom Text / 下方文字 (Teks Bawah)
+                    </label>
+                    <input type="text" id="bottomTextInput" placeholder="AND IT WORKS FIRST TRY" 
+                        class="w-full bg-cyberDark/80 border border-purple-500/40 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-neonCyan transition-all shadow-inner">
+                </div>
+            </div>
+
+            <!-- 3. Sliders / 參數微調滑桿 (Pengaturan Slider) -->
+            <div class="flex flex-col gap-4 bg-cyberDark/40 p-4 rounded-xl border border-white/5">
+                <!-- Font Size Slider -->
+                <div>
+                    <div class="flex justify-between text-xs text-gray-300 mb-1">
+                        <span>Font Size / 字體大小</span>
+                        <span id="fontSizeValue" class="text-neonCyan font-bold">40px</span>
+                    </div>
+                    <input type="range" id="fontSizeSlider" min="16" max="80" value="40" class="w-full">
+                </div>
+
+                <!-- Top Position Slider -->
+                <div>
+                    <div class="flex justify-between text-xs text-gray-300 mb-1">
+                        <span>Top Text Position / 上方文字位置</span>
+                        <span id="topPosValue" class="text-neonCyan font-bold">5%</span>
+                    </div>
+                    <input type="range" id="topPosSlider" min="0" max="45" value="5" class="w-full">
+                </div>
+
+                <!-- Bottom Position Slider -->
+                <div>
+                    <div class="flex justify-between text-xs text-gray-300 mb-1">
+                        <span>Bottom Text Position / 下方文字位置</span>
+                        <span id="bottomPosValue" class="text-neonCyan font-bold">5%</span>
+                    </div>
+                    <input type="range" id="bottomPosSlider" min="0" max="45" value="5" class="w-full">
+                </div>
+
+                <!-- Text Color Picker -->
+                <div class="flex items-center justify-between pt-2">
+                    <span class="text-xs text-gray-300">Text Color / 文字顏色</span>
+                    <div class="flex items-center gap-2">
+                        <input type="color" id="textColorPicker" value="#ffffff" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. One-Click Download Button / 一鍵下載按鈕 (Tombol Unduh) -->
+            <button id="downloadBtn" class="w-full mt-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-neonPink via-purple-600 to-neonCyan text-white font-cyber font-bold text-sm tracking-wider uppercase shadow-lg hover:brightness-125 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group">
+                <i class="fa-solid fa-download text-lg group-hover:bounce"></i>
+                <span>Download Meme / 下載圖片</span>
+            </button>
+        </section>
+
+        <!-- RIGHT PANEL: Live Preview / 右側即時預覽區 (Pratinjau Live) -->
+        <section class="lg:col-span-7 flex flex-col items-center">
+            <div class="w-full glass-panel p-4 md:p-6 rounded-2xl neon-border-pink flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-4 border-b border-pink-500/30 pb-3">
+                    <span class="text-xs font-cyber text-neonPink uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-eye"></i> LIVE PREVIEW / 即時預覽
+                    </span>
+                    <span class="text-[10px] text-gray-400">WYSIWYG Mode</span>
+                </div>
+
+                <!-- Meme Container (Captured by html2canvas) / 截圖區域 -->
+                <div id="memeContainer" class="relative w-full max-w-[550px] bg-black rounded-lg overflow-hidden shadow-2xl flex items-center justify-center min-h-[300px] border border-white/10 select-none">
+                    
+                    <!-- Background Image / 迷因底圖 -->
+                    <img id="memeImage" src="https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop" 
+                         alt="Meme Background" class="w-full h-auto object-contain block max-h-[600px]" crossorigin="anonymous">
+
+                    <!-- Top Text Overlay / 上方文字 -->
+                    <p id="topText" class="meme-text absolute w-full text-center left-0 px-4 text-white uppercase pointer-events-none transition-all"
+                       style="top: 5%; font-size: 40px; color: #ffffff;">
+                        WHEN YOU WRITE CODE...
+                    </p>
+
+                    <!-- Bottom Text Overlay / 下方文字 -->
+                    <p id="bottomText" class="meme-text absolute w-full text-center left-0 px-4 text-white uppercase pointer-events-none transition-all"
+                       style="bottom: 5%; font-size: 40px; color: #ffffff;">
+                        AND IT WORKS FIRST TRY
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Multilingual Notes & Instructions / 說明文件區 (Penjelasan) -->
+    <footer class="w-full max-w-6xl mt-10 glass-panel p-6 rounded-2xl border border-white/10 text-xs leading-relaxed text-gray-300 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Chinese Explanation -->
+        <div class="space-y-2 border-b md:border-b-0 md:border-r border-white/10 pb-4 md:pb-0 md:pr-4">
+            <h3 class="font-bold text-neonCyan text-sm flex items-center gap-2">
+                <i class="fa-solid fa-book"></i> 中文程式碼解析與說明
+            </h3>
+            <ul class="list-disc list-inside space-y-1 text-gray-400">
+                <li><strong class="text-white">FileReader 避開 CORS：</strong> 使用 JS 的 <code class="text-neonPink">FileReader.readAsDataURL()</code> 將本地圖片轉為 Base64 格式，避免外連圖片跨域導至無法下載的問題。</li>
+                <li><strong class="text-white">文字黑邊效果：</strong> 利用 CSS 的 <code class="text-neonPink">text-shadow</code> 八方向陰影疊加，確保文字在任何底圖上都能清晰顯示。</li>
+                <li><strong class="text-white">一鍵截圖下載：</strong> 透過 <code class="text-neonPink">html2canvas</code> 將 HTML <code class="text-neonCyan">#memeContainer</code> 節點渲染為 Canvas 並輸出成 PNG 檔。</li>
+            </ul>
+        </div>
+
+        <!-- Indonesian Explanation -->
+        <div class="space-y-2">
+            <h3 class="font-bold text-neonPink text-sm flex items-center gap-2">
+                <i class="fa-solid fa-language"></i> Penjelasan Singkat (Bahasa Indonesia)
+            </h3>
+            <ul class="list-disc list-inside space-y-1 text-gray-400">
+                <li><strong class="text-white">Mencegah CORS Error:</strong> Menggunakan <code class="text-neonCyan">FileReader</code> JS untuk membaca gambar lokal menjadi DataURL agar tidak terkena pembatasan CORS saat diunduh.</li>
+                <li><strong class="text-white">Teks Meme Kontras:</strong> Menggunakan <code class="text-neonCyan">text-shadow</code> CSS untuk memberikan outline hitam tebal pada teks di atas gambar.</li>
+                <li><strong class="text-white">Fitur Unduh 1-Klik:</strong> Memakai library <code class="text-neonCyan">html2canvas</code> untuk mengubah elemen preview menjadi gambar PNG (<code class="text-neonPink">my-meme.png</code>).</li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- JavaScript Section / 程式邏輯 -->
+    <script>
+        // ----------------------------------------------------
+        // 1. Element Selectors / 取得 DOM 元素 (Mendapatkan Elemen)
+        // ----------------------------------------------------
+        const imageInput = document.getElementById('imageInput');
+        const memeImage = document.getElementById('memeImage');
+        
+        const topTextInput = document.getElementById('topTextInput');
+        const bottomTextInput = document.getElementById('bottomTextInput');
+        const topText = document.getElementById('topText');
+        const bottomText = document.getElementById('bottomText');
+        
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const topPosSlider = document.getElementById('topPosSlider');
+        const bottomPosSlider = document.getElementById('bottomPosSlider');
+        const textColorPicker = document.getElementById('textColorPicker');
+        
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const topPosValue = document.getElementById('topPosValue');
+        const bottomPosValue = document.getElementById('bottomPosValue');
+        
+        const downloadBtn = document.getElementById('downloadBtn');
+        const memeContainer = document.getElementById('memeContainer');
+
+        // ----------------------------------------------------
+        // 2. Real-time Text Updates / 即時文字同步 (Update Teks Real-time)
+        // ----------------------------------------------------
+        topTextInput.addEventListener('input', (e) => {
+            topText.textContent = e.target.value.toUpperCase() || 'TOP TEXT';
+        });
+
+        bottomTextInput.addEventListener('input', (e) => {
+            bottomText.textContent = e.target.value.toUpperCase() || 'BOTTOM TEXT';
+        });
+
+        // ----------------------------------------------------
+        // 3. Local Image Upload Handler / 本地圖片讀取 (Unggah Gambar Lokal)
+        // ----------------------------------------------------
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // FileReader 讀取用戶電腦內的圖檔
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    memeImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file); // 轉為 DataURL base64 格式 (Membaca file sebagai DataURL)
+            }
+        });
+
+        // ----------------------------------------------------
+        // 4. Style Controls & Sliders / 微調滑桿控制 (Kontrol Slider & Gaya)
+        // ----------------------------------------------------
+        // 字體大小控制 (Pengaturan Ukuran Font)
+        fontSizeSlider.addEventListener('input', (e) => {
+            const size = e.target.value + 'px';
+            topText.style.fontSize = size;
+            bottomText.style.fontSize = size;
+            fontSizeValue.textContent = size;
+        });
+
+        // 上方文字垂直位置 (Posisi Teks Atas)
+        topPosSlider.addEventListener('input', (e) => {
+            const pos = e.target.value + '%';
+            topText.style.top = pos;
+            topPosValue.textContent = pos;
+        });
+
+        // 下方文字垂直位置 (Posisi Teks Bawah)
+        bottomPosSlider.addEventListener('input', (e) => {
+            const pos = e.target.value + '%';
+            bottomText.style.bottom = pos;
+            bottomPosValue.textContent = pos;
+        });
+
+        // 文字顏色選擇器 (Pengatur Warna Teks)
+        textColorPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            topText.style.color = color;
+            bottomText.style.color = color;
+        });
+
+        // ----------------------------------------------------
+        // 5. One-Click Download via html2canvas / 一鍵下載功能 (Fitur Unduh Gambar)
+        // ----------------------------------------------------
+        downloadBtn.addEventListener('click', () => {
+            // 顯示載入狀態 (Tampilkan status loading)
+            const originalBtnText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-lg"></i> GENERATING...`;
+            downloadBtn.disabled = true;
+
+            // 使用 html2canvas 將 #memeContainer 轉為 Canvas (Mengubah DOM ke Canvas)
+            html2canvas(memeContainer, {
+                useCORS: true,       // 允許跨域圖片 (Izinkan gambar CORS)
+                scale: 2,            // 提升下載圖片解析度 (Meningkatkan resolusi gambar 2x)
+                backgroundColor: null // 保持透明背景 (Background transparan jika ada)
+            }).then(canvas => {
+                // 將 Canvas 轉換成圖片連結並下載 (Membuat link unduhan)
+                const link = document.createElement('a');
+                link.download = 'my-meme.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // 恢復按鈕狀態 (Kembalikan tombol ke status semula)
+                downloadBtn.innerHTML = originalBtnText;
+                downloadBtn.disabled = false;
+            }).catch(err => {
+                console.error('Download error:', err);
+                downloadBtn.innerHTML = originalBtnText;
+                downloadBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
