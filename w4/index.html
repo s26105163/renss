@@ -1,1 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>朋友對我的動態留言板</title>
+  <style>
+    /* ===================================================
+       1. 全局樣式與主題配色 (深色霓虹玻璃擬態風格)
+       =================================================== */
+    :root {
+      /* 【主題顏色設定區】可自由更換背景與卡片基底色 */
+      --bg-color: #0b0f19;                      /* 網頁背景色 (深藍黑) */
+      --card-bg: rgba(255, 255, 255, 0.04);      /* 卡片背景 (半透明玻璃) */
+      --card-border: rgba(255, 255, 255, 0.08);  /* 卡片預設微弱邊框 */
+      
+      /* 文字顏色 */
+      --text-main: #f1f5f9;                     /* 主要文字 (亮白) */
+      --text-muted: #94a3b8;                    /* 次要/時間文字 (灰藍) */
+      --accent-name: #38bdf8;                   /* 名字強調色 (天空藍) */
+      
+      /* 【重點控制區 1】：輪播焦點 Highlight 卡片顏色與視覺效果 */
+      --highlight-border: #ec4899;              /* 亮起卡片的邊框顏色 (霓虹桃粉) */
+      --highlight-glow: rgba(236, 72, 153, 0.65);/* 亮起卡片的霓虹發光暈影 */
+      --highlight-scale: 1.06;                  /* 亮起卡片的放大比例 */
+      
+      /* 未被選中卡片的暗化/模糊效果 (營造展覽聚光燈氛圍) */
+      --dim-opacity: 0.3;                       /* 暗化卡片的透明度 */
+      --dim-blur: 2px;                          /* 暗化卡片的模糊程度 */
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      padding: 2.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ===================================================
+       2. 酷炫載入中動畫 (Loading Animation)
+       =================================================== */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5rem;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--highlight-border);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 0 15px var(--highlight-glow);
+    }
+
+    #loading p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      letter-spacing: 1px;
+      animation: pulse 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+
+    /* ===================================================
+       3. 瀑布流排版 (Masonry Layout)
+       =================================================== */
+    .board-container {
+      width: 100%;
+      max-width: 1100px;
+      column-count: 3;
+      column-gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .board-container { column-count: 2; }
+    }
+    @media (max-width: 600px) {
+      .board-container { column-count: 1; }
+    }
+
+    /* ===================================================
+       4. 留言卡片樣式與動態輪播特效
+       =================================================== */
+    .card {
+      break-inside: avoid;
+      margin-bottom: 1.5rem;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
+      will-change: transform, filter, opacity;
+    }
+
+    .card .author {
+      font-weight: 700;
+      color: var(--accent-name);
+      font-size: 1.05rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .card .message {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card .time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      text-align: right;
+    }
+
+    /* 輪播高亮選中的卡片 */
+    .card.highlight {
+      border-color: var(--highlight-border);
+      box-shadow: 0 0 25px var(--highlight-glow);
+      transform: scale(var(--highlight-scale));
+      z-index: 10;
+      opacity: 1 !important;
+      filter: blur(0px) !important;
+    }
+
+    /* 未被選中的卡片暗化 */
+    .card.dimmed {
+      opacity: var(--dim-opacity);
+      filter: blur(var(--dim-blur));
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>✨ 朋友對我的動態留言板 ✨</h1>
+    <p>已串接表單：「未命名表單 (回覆)」 ‧ 展覽級動態光影輪播</p>
+  </header>
+
+  <!-- 讀取留言動畫 -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>讀取留言中...</p>
+  </div>
+
+  <!-- 留言瀑布流牆 -->
+  <div id="board" class="board-container" style="display: none;"></div>
+
+  <script>
+    // ===================================================
+    // 【重點控制區 2】：全域設定參數
+    // ===================================================
+
+    // 已套用你的 Google 試算表 CSV 匯出網址
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/1yVrjl_6cthzINbpLc5R7Rfp7vrmdJcprQzuFGGT1Kqc/export?format=csv";
+
+    // 輪播切換時間 (3000ms = 3 秒)
+    const CAROUSEL_INTERVAL_MS = 3000;
+
+    let cardsElements = [];
+    let currentIndex = 0;
+
+    // 解析 CSV，處理包含逗號與雙引號的情形
+    function parseCSVRow(rowText) {
+      const result = [];
+      let insideQuote = false;
+      let entry = '';
+      
+      for (let i = 0; i < rowText.length; i++) {
+        const char = rowText[i];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          result.push(entry.trim().replace(/^"|"$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      result.push(entry.trim().replace(/^"|"$/g, ''));
+      return result;
+    }
+
+    function parseCSV(csvText) {
+      const lines = csvText.split(/\r?\n/);
+      const data = [];
+      
+      // 根據表單欄位順序：[0] 時間戳記, [1] 姓名, [2] 悄悄話
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const row = parseCSVRow(lines[i]);
+        if (row.length >= 3) {
+          data.push({
+            timestamp: row[0] || '',
+            name: row[1] || '匿名朋友',
+            message: row[2] || '(無留言內容)'
+          });
+        }
+      }
+      return data;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function renderBoard(messages) {
+      const board = document.getElementById('board');
+      const loading = document.getElementById('loading');
+      
+      board.innerHTML = ''; 
+
+      if (messages.length === 0) {
+        board.innerHTML = '<p style="text-align:center; color: var(--text-muted); margin-top: 3rem;">目前還沒有收到任何留言喔！</p>';
+      } else {
+        messages.forEach((item) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          
+          card.innerHTML = `
+            <div class="author">💬 ${escapeHTML(item.name)}</div>
+            <div class="message">${escapeHTML(item.message)}</div>
+            <div class="time">${escapeHTML(item.timestamp)}</div>
+          `;
+          
+          board.appendChild(card);
+        });
+      }
+
+      loading.style.display = 'none';
+      board.style.display = 'block';
+
+      cardsElements = Array.from(document.querySelectorAll('.card'));
+      if (cardsElements.length > 0) {
+        startCarousel();
+      }
+    }
+
+    function startCarousel() {
+      highlightCard(currentIndex);
+
+      setInterval(() => {
+        currentIndex = (currentIndex + 1) % cardsElements.length;
+        highlightCard(currentIndex);
+      }, CAROUSEL_INTERVAL_MS);
+    }
+
+    function highlightCard(targetIndex) {
+      cardsElements.forEach((card, idx) => {
+        if (idx === targetIndex) {
+          card.classList.add('highlight');
+          card.classList.remove('dimmed');
+        } else {
+          card.classList.remove('highlight');
+          card.classList.add('dimmed');
+        }
+      });
+    }
+
+    async function fetchMessages() {
+      try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error('網路讀取錯誤');
+        
+        const csvText = await response.text();
+        const parsedData = parseCSV(csvText);
+        
+        renderBoard(parsedData);
+      } catch (error) {
+        console.error(error);
+        const loading = document.getElementById('loading');
+        loading.innerHTML = `<p style="color: #f87171;">⚠️ 留言讀取失敗！<br><span style="font-size:0.85rem; color: #94a3b8;">請確保該 Google 試算表已開啟「知道連結的人皆可檢視」權限。</span></p>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchMessages);
+  </script>
+</body>
+</html>
