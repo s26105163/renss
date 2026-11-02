@@ -1,1 +1,134 @@
+/* ==========================================
+   重設與基礎設定 (Reset & Basic Setup)
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+/* Latar Belakang Gradasi Biru yang Smooth & Modern */
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Gradasi dari Biru Lembut (Atas Kiri) ke Biru Ocean Deep (Bawah Kanan) */
+    background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
+    
+    padding: 20px;
+}
+
+/* ==========================================
+   卡片主體 (Card Styling)
+   ========================================== */
+.card {
+    background-color: rgba(255, 255, 255, 0.95);
+    width: 100%;
+    max-width: 350px;
+    padding: 40px 28px;
+    border-radius: 28px;
+    text-align: center;
+    
+    /* 微陰影 (Soft Shadow) */
+    box-shadow: 0 12px 32px rgba(40, 60, 90, 0.12);
+    backdrop-filter: blur(8px);
+    
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 36px rgba(40, 60, 90, 0.18);
+}
+
+/* ==========================================
+   1. 圓形大頭貼 (Avatar)
+   ========================================== */
+.avatar-wrapper {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 50px;
+    border-radius: 50%;
+    padding: 4px;
+    /* Bingkai Gradasi Biru Lembut */
+    background: linear-gradient(135deg, #748cab, #a3cef1);
+    box-shadow: 0 4px 15px rgba(116, 140, 171, 0.25);
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ==========================================
+   2. 文字資訊 (Typography)
+   ========================================== */
+.name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2b2d42;
+    margin-bottom: 8px;
+}
+
+.bio {
+    font-size: 14px;
+    color: #5c677d;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    padding: 0 8px;
+}
+
+/* ==========================================
+   3. 按鈕區塊與圖示 (Buttons & Icons)
+   ========================================== */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Jarak antara ikon dan teks */
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-icon {
+    font-size: 18px; /* Ukuran logo kecil */
+}
+
+/* Tombol Instagram (Gradasi Instagram/Muted Pink-Purple) */
+.btn-instagram {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(220, 39, 67, 0.25);
+}
+
+.btn-instagram:hover {
+    opacity: 0.92;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 39, 67, 0.35);
+}
+
+/* Tombol Email (Biru Soft Muted) */
+.btn-email {
+    background-color: #3d5a80;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(61, 90, 128, 0.25);
+}
+
 
