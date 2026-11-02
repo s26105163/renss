@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什麼？ - 隨機抽籤機</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff8f1',
+                            100: '#feecdc',
+                            200: '#fcd5b5',
+                            300: '#fabb84',
+                            400: '#f89b4f',
+                            500: '#f67a28',
+                            600: '#e45a1b',
+                            700: '#bd4218',
+                            800: '#97351a',
+                            900: '#7a2e19',
+                        }
+                    },
+                    animation: {
+                        'bounce-short': 'bounceShort 0.5s ease-in-out',
+                        'pop': 'pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        bounceShort: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pop: {
+                            '0%': { opacity: '0', transform: 'scale(0.8)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- 引入獨立 CSS 樣式檔 -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- 引入獨立 JavaScript 腳本檔 (使用 defer) -->
+    <script src="script.js" defer></script>
+</head>
+<body class="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 dark:from-slate-950 dark:via-slate-900 dark:to-orange-950/30 min-h-screen font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col justify-between">
 
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-4xl mx-auto px-6 pt-6 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                <i class="fa-solid fa-utensils text-lg"></i>
+            </div>
+            <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-brand-600 to-amber-500 bg-clip-text text-transparent">吃什麼隨機抽籤機</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <!-- 暗黑模式切換按鈕 -->
+            <button id="themeToggle" class="p-2.5 rounded-2xl glass hover:bg-white/80 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all shadow-sm">
+                <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主內容區塊 -->
+    <main class="w-full max-w-md mx-auto px-4 py-8 flex-1 flex flex-col items-center justify-center">
+        <div class="w-full glass rounded-3xl p-6 md:p-8 shadow-2xl shadow-orange-500/10 text-center relative overflow-hidden border border-white/60 dark:border-slate-800">
+            
+            <!-- 歡迎預設狀態 -->
+            <div id="welcomeState" class="py-8 space-y-4">
+                <div class="w-24 h-24 mx-auto rounded-full bg-brand-100 dark:bg-slate-800/80 flex items-center justify-center text-brand-500 dark:text-brand-400 text-4xl shadow-inner mb-4 animate-bounce-short">
+                    <i class="fa-solid fa-cookie-bite"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">今天吃什麼？</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto">還在猶豫不決嗎？點擊下方按鈕，讓幸運抽籤機幫你決定今天的美味餐點！</p>
+            </div>
+
+            <!-- 抽籤結果狀態 -->
+            <div id="resultState" class="hidden space-y-5 animate-pop">
+                <div class="relative group">
+                    <img id="foodImage" src="" alt="Food" class="w-full h-56 object-cover rounded-2xl shadow-md border-2 border-amber-200 dark:border-slate-700 transition-transform duration-300 group-hover:scale-[1.02]">
+                    <div id="rouletteOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-xs rounded-2xl hidden flex items-center justify-center text-white text-2xl font-bold">
+                        <i class="fa-solid fa-spinner animate-spin text-4xl text-amber-400"></i>
+                    </div>
+                </div>
+
+                <h2 id="foodTitle" class="text-3xl font-extrabold text-brand-600 dark:text-brand-400 tracking-tight"></h2>
+
+                <div class="flex flex-col gap-2.5 pt-2">
+                    <a id="mapBtn" href="#" target="_blank" class="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all active:scale-95">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>馬上出發 (Google Maps)</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="mt-8 space-y-3">
+                <button id="drawBtn" class="w-full py-4 px-6 bg-gradient-to-r from-brand-500 to-amber-500 hover:from-brand-600 hover:to-amber-600 text-white text-lg font-black rounded-2xl shadow-xl shadow-brand-500/30 hover:shadow-brand-500/50 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-dice text-xl"></i>
+                    <span id="drawBtnText">點我抽籤</span>
+                </button>
+
+                <button id="viewMenuBtn" class="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-2xl transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-list-ul"></i>
+                    <span>瀏覽所有菜單</span>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 菜單彈窗 -->
+    <div id="menuModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-brand-500"></i>
+                    <span>完整美食菜單</span>
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-full">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 菜單列表 -->
+            <div id="menuGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto my-4 pr-1 flex-1">
+                <!-- 由 JavaScript 自動動態生成 -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button id="closeModalBottomBtn" class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="w-full max-w-4xl mx-auto px-6 py-4 text-center text-xs text-slate-400 dark:text-slate-600">
+        © 吃什麼隨機抽籤機 - 幫你解決選擇困難症
+    </footer>
+
+</body>
+</html>
