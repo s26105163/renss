@@ -226,7 +226,7 @@
                         <i class="fa-solid fa-brain"></i>
                     </div>
                     <h2 class="font-cyber text-xl font-bold text-white tracking-widest uppercase text-glow-cyan">NEURAL SYNC // 連線登入</h2>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1.5 font-mono">接入神經網路節點，測試小隊集體意識共鳴度</p>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1.5 font-mono">接入 Google Cloud 神經網路節點，測試小隊默契共鳴</p>
                 </div>
 
                 <!-- Tabs: Join / Create -->
@@ -247,7 +247,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-mono font-bold text-cyber-pink uppercase mb-1.5 tracking-widest">房間代碼 // ACCESS CODE</label>
-                        <input type="text" id="join-room-code" required placeholder="例如: 2077" maxlength="6" class="w-full px-4 py-3 cyber-cut-sm border border-cyber-pink/40 focus:outline-none focus:border-cyber-pink text-sm bg-cyber-void text-cyber-yellow placeholder-slate-600 uppercase font-mono tracking-[0.25em] transition">
+                        <input type="text" id="join-room-code" required placeholder="例如: ALPHA99" maxlength="12" class="w-full px-4 py-3 cyber-cut-sm border border-cyber-pink/40 focus:outline-none focus:border-cyber-pink text-sm bg-cyber-void text-cyber-yellow placeholder-slate-600 uppercase font-mono tracking-[0.2em] transition">
                     </div>
                     <button type="submit" class="w-full py-3.5 px-4 bg-cyber-cyan hover:bg-white text-black font-cyber font-black rounded-none cyber-cut-sm text-sm uppercase tracking-widest transition glow-cyan flex items-center justify-center gap-2">
                         <i class="fa-solid fa-plug"></i> 接入神經連線
@@ -260,20 +260,24 @@
                         <label class="block text-xs font-mono font-bold text-cyber-yellow uppercase mb-1.5 tracking-widest">主機指揮官 // HOST ID</label>
                         <input type="text" id="create-host-name" required placeholder="輸入房主代號..." class="w-full px-4 py-3 cyber-cut-sm border border-cyber-yellow/50 focus:outline-none focus:border-cyber-yellow text-sm bg-cyber-void text-white placeholder-slate-600 font-mono transition">
                     </div>
+                    <div>
+                        <label class="block text-xs font-mono font-bold text-cyber-cyan uppercase mb-1.5 tracking-widest">自訂房號 (選填) // CUSTOM CODE</label>
+                        <input type="text" id="create-room-code" placeholder="留空將自動生成 4 位數代碼" maxlength="12" class="w-full px-4 py-3 cyber-cut-sm border border-cyber-cyan/40 focus:outline-none focus:border-cyber-cyan text-sm bg-cyber-void text-cyber-yellow placeholder-slate-600 uppercase font-mono tracking-[0.2em] transition">
+                    </div>
                     <div class="bg-cyber-void/90 border border-cyber-pink/40 cyber-cut-sm p-3.5 text-xs text-slate-300 space-y-1.5">
                         <div class="font-bold text-cyber-pink flex items-center gap-1.5 font-mono uppercase">
                             <i class="fa-solid fa-user-secret"></i> STEALTH HOST // 潛行房主協議
                         </div>
-                        <p class="text-slate-400 leading-relaxed">系統將自動生成 4 位數加密頻道。房主可偽裝為一般玩家同步作答，並隨時呼出隱藏控制台下達指令與全網開牌！</p>
+                        <p class="text-slate-400 leading-relaxed">開房後自動同步至雲端資料庫。房主可偽裝為一般玩家同步作答，並隨時呼出隱藏控制台下達指令與全網開牌！</p>
                     </div>
-                    <button type="submit" class="w-full py-3.5 px-4 bg-cyber-pink hover:bg-pink-500 text-white font-cyber font-black cyber-cut-sm text-sm uppercase tracking-widest transition glow-pink flex items-center justify-center gap-2">
+                    <button type="submit" id="create-room-btn" class="w-full py-3.5 px-4 bg-cyber-pink hover:bg-pink-500 text-white font-cyber font-black cyber-cut-sm text-sm uppercase tracking-widest transition glow-pink flex items-center justify-center gap-2">
                         <i class="fa-solid fa-satellite"></i> 初始化全新頻道
                     </button>
                 </form>
 
                 <div class="mt-6 pt-4 border-t border-cyber-cyan/20 text-center text-[11px] font-mono text-slate-500">
-                    <span class="inline-flex items-center gap-1.5 text-cyber-cyan/70">
-                        <i class="fa-solid fa-wave-square text-cyber-pink"></i> REAL-TIME POLLING & LOCAL MATRIX SYNC READY
+                    <span class="inline-flex items-center gap-1.5 text-cyber-cyan/80">
+                        <i class="fa-solid fa-cloud-bolt text-cyber-pink"></i> GOOGLE APPS SCRIPT CLOUD UPLINK ACTIVE
                     </span>
                 </div>
             </div>
@@ -298,9 +302,12 @@
                                 <span id="game-status-badge" class="text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/50">
                                     同步傳輸中...
                                 </span>
+                                <span id="sync-ping-indicator" class="text-[11px] font-mono text-cyber-cyan/70 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyber-green animate-ping"></span> LIVE
+                                </span>
                             </div>
                             <h2 id="display-question" class="text-lg sm:text-2xl font-bold text-white mt-2 tracking-wide text-glow-cyan">
-                                等待房主出題中...
+                                等待房主發布題目...
                             </h2>
                         </div>
                     </div>
@@ -309,8 +316,8 @@
                     <div class="flex items-center gap-3 bg-cyber-void px-4 py-2.5 cyber-cut-sm border border-cyber-cyan/40 self-start sm:self-center">
                         <i class="fa-solid fa-users-viewfinder text-cyber-yellow text-base"></i>
                         <div class="text-xs">
-                            <div class="text-slate-400 font-mono uppercase">UPLOAD STATUS</div>
-                            <div class="font-bold text-cyber-cyan text-sm font-mono" id="display-progress-text">0 / 0 人已提交</div>
+                            <div class="text-slate-400 font-mono uppercase">CLOUD SUBMISSIONS</div>
+                            <div class="font-bold text-cyber-cyan text-sm font-mono" id="display-progress-text">0 人已提交</div>
                         </div>
                     </div>
                 </div>
@@ -327,7 +334,7 @@
                 <div id="answer-submitted-banner" class="hidden p-3 bg-cyber-green/10 border border-cyber-green/50 cyber-cut-sm text-cyber-green text-sm flex items-center justify-between">
                     <div class="flex items-center gap-2 font-mono font-bold text-xs sm:text-sm">
                         <i class="fa-solid fa-shield-halved text-base"></i>
-                        <span>訊號已加密鎖定！開牌前可隨時覆寫重新上傳。</span>
+                        <span>訊號已加密上傳至雲端！開牌前可隨時覆寫重新送出。</span>
                     </div>
                     <span class="text-xs bg-cyber-green/20 text-cyber-green border border-cyber-green/40 px-2.5 py-1 font-mono font-bold" id="submitted-answer-preview">--</span>
                 </div>
@@ -417,7 +424,7 @@
                         <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">1. 廣播新題目 // BROADCAST PROMPT</label>
                         <div class="flex gap-2">
                             <input type="text" id="host-question-input" placeholder="例如：夜之城裡最危險的職業？" class="flex-1 px-3.5 py-2.5 cyber-cut-sm border border-cyber-cyan/40 focus:outline-none focus:border-cyber-cyan text-sm bg-cyber-void text-white placeholder-slate-600 font-mono">
-                            <button onclick="hostSetQuestion()" class="px-4 py-2.5 bg-cyber-cyan hover:bg-white text-black text-xs font-cyber font-black cyber-cut-sm transition whitespace-nowrap uppercase">
+                            <button onclick="hostSetQuestion()" id="host-publish-btn" class="px-4 py-2.5 bg-cyber-cyan hover:bg-white text-black text-xs font-cyber font-black cyber-cut-sm transition whitespace-nowrap uppercase">
                                 發布題目
                             </button>
                         </div>
@@ -432,7 +439,7 @@
 
                     <!-- Step 2: Answer Status & Progress -->
                     <div class="space-y-2 border-t border-slate-800 pt-4">
-                        <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">2. 訊號上傳進度監視</label>
+                        <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">2. 雲端訊號上傳狀態</label>
                         <div class="w-full bg-cyber-void h-3 border border-cyber-cyan/30 overflow-hidden">
                             <div id="host-progress-bar" class="bg-gradient-to-r from-cyber-pink via-cyber-yellow to-cyber-cyan h-full w-0 transition-all duration-300"></div>
                         </div>
@@ -446,11 +453,11 @@
                     <div class="space-y-3 border-t border-slate-800 pt-4">
                         <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">3. 系統核心控制 // OVERRIDE</label>
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="hostRevealCards()" class="py-3 px-4 bg-cyber-green hover:bg-emerald-300 text-black font-cyber font-black cyber-cut-sm text-xs sm:text-sm transition shadow-[0_0_15px_rgba(0,255,102,0.35)] flex items-center justify-center gap-2">
+                            <button onclick="hostToggleReveal(true)" class="py-3 px-4 bg-cyber-green hover:bg-emerald-300 text-black font-cyber font-black cyber-cut-sm text-xs sm:text-sm transition shadow-[0_0_15px_rgba(0,255,102,0.35)] flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-eye"></i> 全網 3D 開牌！
                             </button>
-                            <button onclick="hostResetNextRound()" class="py-3 px-4 bg-cyber-void hover:bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/60 font-cyber font-bold cyber-cut-sm text-xs sm:text-sm transition flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-rotate-right"></i> 重置 / 下一題
+                            <button onclick="hostToggleReveal(false)" class="py-3 px-4 bg-cyber-void hover:bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/60 font-cyber font-bold cyber-cut-sm text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-lock"></i> 蓋牌隱藏
                             </button>
                         </div>
                     </div>
@@ -471,7 +478,7 @@
             <div>CLOUD TELEPATHY <span class="text-cyber-pink">//</span> CYBERPUNK NEURAL EDITION 2077</div>
             <div class="flex items-center gap-3">
                 <span class="inline-flex items-center gap-1.5 text-cyber-green">
-                    <span class="w-2 h-2 rounded-full bg-cyber-green shadow-[0_0_8px_#00FF66]"></span> NET-LINK ONLINE
+                    <span class="w-2 h-2 rounded-full bg-cyber-green shadow-[0_0_8px_#00FF66]"></span> GAS CLOUD UPLINK ONLINE
                 </span>
                 <span class="text-slate-700">|</span>
                 <button onclick="toggleHostConsole()" class="hover:text-cyber-pink font-mono text-[11px] underline transition">隱藏房主控制台</button>
@@ -479,21 +486,23 @@
         </div>
     </footer>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT: Terhubung penuh ke Google Apps Script Web App -->
     <script>
-        const GAS_API_URL = "";
+        const SHEET_NAME = 'TelepathyData';
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSFXYewcUowOewadqncOp39xJMwK-Dv7531f04NCF0uchZ-KR9MsXDqraQeHqcnnM/exec";
 
         let state = {
             roomCode: "",
             playerName: "",
             isHost: false,
             round: 1,
-            question: "等待房主出題中...",
+            question: "",
             isRevealed: false,
-            players: {}
+            answers: [] // Array dari GAS: [{ playerName, answer }]
         };
 
-        let syncTimer = null;
+        let pollingInterval = null;
+        let lastRenderSignature = "";
 
         function showToast(msg, type = "info") {
             const container = document.getElementById("toast-container");
@@ -506,7 +515,7 @@
             toast.className = `px-4 py-2.5 cyber-cut-sm border text-xs font-mono font-bold backdrop-blur-md transition-all ${colors[type] || colors.info}`;
             toast.textContent = `> ${msg}`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 3200);
         }
 
         function switchLobbyTab(tab) {
@@ -528,6 +537,7 @@
             }
         }
 
+        // 1. Pemain Masuk ke Room
         function handleJoinRoom(e) {
             e.preventDefault();
             const name = document.getElementById("join-player-name").value.trim();
@@ -538,29 +548,42 @@
             state.roomCode = code;
             state.isHost = false;
 
-            loadLocalRoomState();
-            state.players[name] = state.players[name] || { name, answer: "", submitted: false };
-            saveLocalRoomState();
             enterGameRoom();
         }
 
-        function handleCreateRoom(e) {
+        // 2. Host Membuat Room Baru & Inisialisasi di GAS
+        async function handleCreateRoom(e) {
             e.preventDefault();
             const name = document.getElementById("create-host-name").value.trim();
+            const customCode = document.getElementById("create-room-code").value.trim().toUpperCase();
             if (!name) return;
 
-            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-            state.playerName = name;
-            state.roomCode = randomCode;
-            state.isHost = true;
-            state.round = 1;
-            state.question = "等待房主出題中...";
-            state.isRevealed = false;
-            state.players = { [name]: { name, answer: "", submitted: false } };
+            const roomCode = customCode || Math.floor(1000 + Math.random() * 9000).toString();
+            const btn = document.getElementById("create-room-btn");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在連線雲端...`;
 
-            saveLocalRoomState();
-            enterGameRoom();
-            showToast(`頻道已初始化！節點代碼：${randomCode}`, "success");
+            state.playerName = name;
+            state.roomCode = roomCode;
+            state.isHost = true;
+            state.question = "等待房主發布題目...";
+            state.isRevealed = false;
+
+            try {
+                await postToGAS({
+                    action: 'createRoom',
+                    roomCode: state.roomCode,
+                    question: state.question
+                });
+                showToast(`雲端頻道已建立！代碼：${roomCode}`, "success");
+            } catch (err) {
+                console.error("初始化雲端房間失敗:", err);
+                showToast("雲端初始化異常，已切換即時連線重試", "warn");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-satellite"></i> 初始化全新頻道`;
+                enterGameRoom();
+            }
         }
 
         function enterGameRoom() {
@@ -570,15 +593,89 @@
             document.getElementById("display-room-code").textContent = state.roomCode;
 
             updateRoleBadge();
-            renderAll();
+            renderAll(true);
 
-            if (syncTimer) clearInterval(syncTimer);
-            syncTimer = setInterval(() => {
-                loadLocalRoomState();
-                renderAll();
-            }, 2000);
+            // Jalankan Polling ke GAS setiap 3 detik
+            fetchRoomState();
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(fetchRoomState, 3000);
         }
 
+        // 3. Helper POST Request ke Google Apps Script
+        async function postToGAS(payload) {
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            return response;
+        }
+
+        // 4. Polling Status Room dari GAS (GET)
+        async function fetchRoomState() {
+            if (!state.roomCode || !GAS_API_URL) return;
+
+            try {
+                const response = await fetch(`${GAS_API_URL}?action=getRoomState&roomCode=${encodeURIComponent(state.roomCode)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Deteksi pergantian soal baru untuk menaikkan nomor Cycle & reset banner jawaban lokal
+                    if (data.question && data.question !== state.question) {
+                        if (state.question && state.question !== "等待房主發布題目...") {
+                            state.round += 1;
+                            document.getElementById("answer-submitted-banner").classList.add("hidden");
+                        }
+                        state.question = data.question;
+                    }
+
+                    state.isRevealed = Boolean(data.isRevealed);
+                    state.answers = Array.isArray(data.answers) ? data.answers : [];
+
+                    renderAll(false);
+                }
+            } catch (err) {
+                console.error("抓取雲端輪詢資料失敗:", err);
+            }
+        }
+
+        // 5. Kirim Jawaban Pemain ke GAS
+        async function handleAnswerSubmit(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById("user-answer-input");
+            const btn = document.getElementById("submit-answer-btn");
+            const ans = inputEl.value.trim();
+            if (!ans) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 傳輸中...`;
+
+            try {
+                await postToGAS({
+                    action: 'submitAnswer',
+                    roomCode: state.roomCode,
+                    question: state.question || "等待房主發布題目...",
+                    playerName: state.playerName,
+                    answer: ans
+                });
+
+                inputEl.value = "";
+                document.getElementById("answer-submitted-banner").classList.remove("hidden");
+                document.getElementById("submitted-answer-preview").textContent = ans;
+                showToast("神經訊號已上傳至 Google 雲端！", "success");
+
+                await fetchRoomState();
+            } catch (err) {
+                console.error("提交答案失敗:", err);
+                showToast("訊號上傳失敗，請檢查網路後重試！", "warn");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-bolt"></i> 上傳訊號`;
+            }
+        }
+
+        // 6. Kontrol Host Console
         function updateRoleBadge() {
             const badge = document.getElementById("role-badge");
             const dot = document.getElementById("host-indicator-dot");
@@ -610,56 +707,51 @@
             document.getElementById("host-question-input").value = q;
         }
 
-        function hostSetQuestion() {
-            const q = document.getElementById("host-question-input").value.trim();
-            if (!q) return;
-            state.question = q;
-            state.isRevealed = false;
-            saveLocalRoomState();
-            renderAll();
-            toggleHostConsole();
-            showToast("新題目訊號已全網廣播！", "success");
+        async function hostSetQuestion() {
+            const qText = document.getElementById("host-question-input").value.trim();
+            if (!qText || !state.roomCode) return;
+
+            const btn = document.getElementById("host-publish-btn");
+            btn.disabled = true;
+            btn.textContent = "傳輸中...";
+
+            try {
+                await postToGAS({
+                    action: 'createRoom',
+                    roomCode: state.roomCode,
+                    question: qText
+                });
+
+                document.getElementById("host-question-input").value = "";
+                toggleHostConsole();
+                showToast("新題目訊號已全網廣播！", "success");
+                await fetchRoomState();
+            } catch (err) {
+                console.error("房主更新題目失敗:", err);
+                showToast("發布題目失敗！", "warn");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "發布題目";
+            }
         }
 
-        function hostRevealCards() {
-            state.isRevealed = true;
-            saveLocalRoomState();
-            renderAll();
-            toggleHostConsole();
-            showToast("執行全網 3D 晶片解密開牌！", "success");
-        }
+        async function hostToggleReveal(revealState) {
+            if (!state.roomCode) return;
 
-        function hostResetNextRound() {
-            state.round += 1;
-            state.isRevealed = false;
-            state.question = "等待房主出題中...";
-            Object.keys(state.players).forEach(k => {
-                state.players[k].answer = "";
-                state.players[k].submitted = false;
-            });
-            document.getElementById("user-answer-input").value = "";
-            document.getElementById("answer-submitted-banner").classList.add("hidden");
-            saveLocalRoomState();
-            renderAll();
-            showToast(`系統重置：進入 CYCLE ${state.round}`, "info");
-        }
+            try {
+                await postToGAS({
+                    action: 'revealCards',
+                    roomCode: state.roomCode,
+                    isRevealed: revealState
+                });
 
-        function handleAnswerSubmit(e) {
-            e.preventDefault();
-            const ans = document.getElementById("user-answer-input").value.trim();
-            if (!ans) return;
-
-            state.players[state.playerName] = {
-                name: state.playerName,
-                answer: ans,
-                submitted: true
-            };
-            saveLocalRoomState();
-
-            document.getElementById("answer-submitted-banner").classList.remove("hidden");
-            document.getElementById("submitted-answer-preview").textContent = ans;
-            renderAll();
-            showToast("神經訊號上傳完成！", "success");
+                toggleHostConsole();
+                showToast(revealState ? "執行全網 3D 晶片解密開牌！" : "已執行全網蓋牌隱藏！", "success");
+                await fetchRoomState();
+            } catch (err) {
+                console.error("切換卡牌狀態失敗:", err);
+                showToast("切換翻牌狀態失敗！", "warn");
+            }
         }
 
         function copyRoomCode() {
@@ -667,72 +759,70 @@
             showToast(`已複製節點代碼：${state.roomCode}`, "info");
         }
 
-        function saveLocalRoomState() {
-            const key = `telepathy_room_${state.roomCode}`;
-            localStorage.setItem(key, JSON.stringify({
-                round: state.round,
-                question: state.question,
-                isRevealed: state.isRevealed,
-                players: state.players
-            }));
-        }
-
-        function loadLocalRoomState() {
-            const key = `telepathy_room_${state.roomCode}`;
-            const raw = localStorage.getItem(key);
-            if (!raw) return;
-            const saved = JSON.parse(raw);
-            state.round = saved.round || 1;
-            state.question = saved.question || "等待房主出題中...";
-            state.isRevealed = !!saved.isRevealed;
-            state.players = { ...saved.players, ...state.players };
-            Object.keys(saved.players || {}).forEach(p => {
-                if (p !== state.playerName) {
-                    state.players[p] = saved.players[p];
-                } else if (!state.players[p]?.submitted && saved.players[p]?.submitted) {
-                    state.players[p] = saved.players[p];
-                }
-            });
-        }
-
-        function renderAll() {
+        // 7. Render UI & Kartu 3D
+        function renderAll(forceRender = false) {
             document.getElementById("display-round-num").textContent = state.round;
-            document.getElementById("display-question").textContent = state.question;
+            document.getElementById("display-question").textContent = state.question || "等待房主發布題目...";
 
             const statusBadge = document.getElementById("game-status-badge");
             if (state.isRevealed) {
-                statusBadge.textContent = "DECRYPTED // 已開牌";
+                statusBadge.textContent = "DECRYPTED // 牌面已翻開";
                 statusBadge.className = "text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-green/20 text-cyber-green border border-cyber-green/50";
             } else {
-                statusBadge.textContent = "同步傳輸中...";
+                statusBadge.textContent = "ENCRYPTED // 牌面隱藏中";
                 statusBadge.className = "text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/50";
             }
 
-            const playerList = Object.values(state.players);
-            const total = playerList.length;
-            const submittedCount = playerList.filter(p => p.submitted).length;
+            // Gabungkan daftar jawaban dari GAS dengan pemain lokal jika belum submit
+            const displayList = state.answers.map(a => ({
+                name: a.playerName,
+                answer: a.answer,
+                submitted: true
+            }));
+
+            const hasSelfSubmitted = displayList.some(p => p.name === state.playerName);
+            if (state.playerName && !hasSelfSubmitted) {
+                displayList.unshift({
+                    name: state.playerName,
+                    answer: "",
+                    submitted: false
+                });
+            }
+
+            const total = displayList.length;
+            const submittedCount = state.answers.length;
             const pct = total > 0 ? Math.round((submittedCount / total) * 100) : 0;
 
-            document.getElementById("display-progress-text").textContent = `${submittedCount} / ${total} 人已提交`;
+            document.getElementById("display-progress-text").textContent = `${submittedCount} 人已提交`;
             document.getElementById("player-count-tag").textContent = `(${total} 位駭客)`;
             document.getElementById("host-progress-bar").style.width = `${pct}%`;
             document.getElementById("host-progress-count").textContent = `已提交: ${submittedCount} / ${total}`;
             document.getElementById("host-progress-percent").textContent = `${pct}%`;
 
-            renderCards(playerList);
-            renderAnalytics(playerList);
+            // Cegah re-render DOM yang tidak perlu agar animasi flip 3D berjalan mulus
+            const currentSignature = JSON.stringify({ isRevealed: state.isRevealed, displayList });
+            if (forceRender || currentSignature !== lastRenderSignature) {
+                lastRenderSignature = currentSignature;
+                renderCards(displayList);
+                renderAnalytics(displayList);
+            }
         }
 
         function renderCards(playerList) {
             const grid = document.getElementById("cards-grid");
             grid.innerHTML = "";
 
+            if (playerList.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs font-mono text-slate-500">目前尚無駭客上傳神經訊號。</div>`;
+                return;
+            }
+
             playerList.forEach(p => {
                 const wrapper = document.createElement("div");
                 wrapper.className = "perspective-1000 h-44";
 
                 const statusPill = p.submitted
-                    ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 cyber-cut-sm bg-cyber-green/20 text-cyber-green border border-cyber-green/50"><i class="fa-solid fa-check mr-1"></i>LOCKED</span>`
+                    ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 cyber-cut-sm bg-cyber-green/20 text-cyber-green border border-cyber-green/50"><i class="fa-solid fa-check mr-1"></i>已準備</span>`
                     : `<span class="text-[11px] font-mono px-2.5 py-0.5 cyber-cut-sm bg-cyber-pink/15 text-cyber-pink border border-cyber-pink/40 animate-pulse-subtle">SYNCING...</span>`;
 
                 wrapper.innerHTML = `
@@ -760,7 +850,7 @@
                             </div>
                             <div class="flex justify-between items-center text-[10px] font-mono">
                                 <span class="text-cyber-pink">2077</span>
-                                <span class="text-cyber-green">SYNC // OK</span>
+                                <span class="text-cyber-green">MATCH // OK</span>
                             </div>
                         </div>
                     </div>
@@ -771,14 +861,13 @@
 
         function renderAnalytics(playerList) {
             const section = document.getElementById("analytics-section");
-            if (!state.isRevealed) {
+            const answered = playerList.filter(p => p.submitted && p.answer);
+
+            if (!state.isRevealed || answered.length === 0) {
                 section.classList.add("hidden");
                 return;
             }
             section.classList.remove("hidden");
-
-            const answered = playerList.filter(p => p.submitted && p.answer);
-            if (answered.length === 0) return;
 
             const groups = {};
             answered.forEach(p => {
