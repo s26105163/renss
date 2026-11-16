@@ -1,389 +1,815 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>雲端心電感應 - 戰術暗黑版</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Space Grotesk & Noto Sans TC -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  
-  <style>
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #0B0F17; /* 深沉暗黑 */
-      color: #F1F5F9;
-    }
-
-    .font-tech {
-      font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif;
-    }
-
-    /* 3D 卡牌翻牌效果 */
-    .perspective-1000 {
-      perspective: 1000px;
-    }
-    .transform-style-3d {
-      transform-style: preserve-3d;
-    }
-    .backface-hidden {
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-    }
-    .rotate-y-180 {
-      transform: rotateY(180deg);
-    }
-
-    /* 自訂捲軸 */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0B0F17;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1E293B;
-      border-radius: 3px;
-    }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
-
-  <!-- 戰術風頂欄 (Header) -->
-  <header class="w-full border-b border-slate-800 bg-[#0F172A]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-      <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold font-tech text-lg shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-        ⚡
-      </div>
-      <div>
-        <h1 class="font-tech font-bold text-lg text-slate-100 tracking-wider uppercase">雲端心電感應</h1>
-        <p class="text-xs text-slate-400 font-mono">TAC-LINK // 多人默契連線系統</p>
-      </div>
-    </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲端心電感應 // CYBERPUNK NEURAL-LINK 2077</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron, Rajdhani, JetBrains Mono & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Orbitron:wght@600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <div class="flex items-center space-x-3">
-      <span id="roomBadge" class="hidden text-xs bg-slate-800 text-cyan-400 border border-slate-700 px-3 py-1 rounded-md font-mono font-bold tracking-wider">
-        房號: <span id="currentRoomDisplay" class="text-white">-</span>
-      </span>
-      <!-- 隱藏房主入口按鈕 -->
-      <button onclick="toggleHostPanel()" title="隱藏房主控制台" class="opacity-30 hover:opacity-100 transition-all text-sm p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300">
-        ⚙️
-      </button>
-    </div>
-  </header>
-
-  <main class="max-w-4xl w-full mx-auto p-6 flex-grow">
-    
-    <!-- 步驟 1：登入與選擇房間 -->
-    <section id="loginSection" class="bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl max-w-md mx-auto my-12 relative overflow-hidden">
-      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-emerald-500"></div>
-      
-      <h2 class="text-xl font-tech font-bold text-white mb-1 uppercase tracking-wide">登入房間系統</h2>
-      <p class="text-xs text-slate-400 mb-6">請輸入房間代碼與玩家名稱以進行同步連線。</p>
-
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-mono font-semibold text-slate-400 mb-1 tracking-wider uppercase">房間代碼 (ROOM CODE)</label>
-          <input type="text" id="inputRoomCode" placeholder="範例：ALPHA99" class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 bg-slate-950 text-white font-mono tracking-widest uppercase placeholder-slate-600 transition" />
-        </div>
-        <div>
-          <label class="block text-xs font-mono font-semibold text-slate-400 mb-1 tracking-wider uppercase">玩家名稱 (PLAYER NAME)</label>
-          <input type="text" id="inputPlayerName" placeholder="請輸入您的暱稱" class="w-full px-4 py-3 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 bg-slate-950 text-white placeholder-slate-600 transition" />
-        </div>
-
-        <button onclick="joinRoom()" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-tech font-bold uppercase tracking-wider rounded-lg transition duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-          進入房間
-        </button>
-      </div>
-    </section>
-
-    <!-- 步驟 2：遊戲主畫面 -->
-    <section id="gameSection" class="hidden space-y-6">
-      
-      <!-- 當前題目區塊 -->
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-1.5 h-full bg-cyan-500"></div>
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-[11px] font-mono font-bold text-cyan-400 tracking-widest uppercase">今日題目 // MISSION OBJECTIVE</span>
-          <span id="liveDot" class="flex h-2 w-2 relative">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-        </div>
-        <h2 id="questionDisplay" class="text-2xl font-tech font-bold text-white tracking-wide">等待房主發布題目...</h2>
-      </div>
-
-      <!-- 玩家填答區塊 -->
-      <div id="answerFormBlock" class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 flex flex-col md:flex-row gap-3 items-center backdrop-blur">
-        <input type="text" id="inputAnswer" placeholder="請輸入您的默契答案..." class="flex-grow w-full px-4 py-3 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 bg-slate-950 text-white placeholder-slate-500 text-sm font-medium" />
-        <button onclick="submitAnswer()" class="w-full md:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-tech font-bold uppercase tracking-wider rounded-lg transition shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm">
-          提交答案
-        </button>
-      </div>
-
-      <!-- 卡牌渲染區域 (3D Flip Effect) -->
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-tech font-bold text-lg text-slate-200 tracking-wide uppercase">玩家與答案列表</h3>
-          <span id="revealStatusBadge" class="text-xs px-3 py-1 rounded-md font-mono font-bold uppercase bg-slate-800 text-slate-400 border border-slate-700">
-            狀態：牌面隱藏 🔒
-          </span>
-        </div>
-
-        <div id="cardsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          <!-- 卡牌將由 JavaScript 自動生成 -->
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- 隱藏房主控制面板 (Modal) -->
-  <div id="hostModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 max-w-md w-full shadow-2xl space-y-5 relative">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-tech font-bold text-lg text-cyan-400 flex items-center gap-2 tracking-wide uppercase">
-          <span>⚙️</span> 房主控制台 (隱藏功能)
-        </h3>
-        <button onclick="toggleHostPanel()" class="text-slate-400 hover:text-white transition">✕</button>
-      </div>
-
-      <div>
-        <label class="block text-xs font-mono font-semibold text-slate-400 mb-1 tracking-wider uppercase">發布 / 更新題目</label>
-        <textarea id="hostQuestionInput" rows="3" placeholder="請輸入給所有玩家的新題目..." class="w-full p-3 rounded-lg border border-slate-700 bg-slate-950 text-white text-sm focus:outline-none focus:border-cyan-500 placeholder-slate-600"></textarea>
-        <button onclick="hostUpdateQuestion()" class="mt-2 w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-tech font-bold text-xs uppercase tracking-wider rounded-lg transition">
-          發布新題目
-        </button>
-      </div>
-
-      <div class="border-t border-slate-800 pt-4 flex flex-col gap-2">
-        <label class="block text-xs font-mono font-semibold text-slate-400 tracking-wider uppercase">控制全網頁翻牌 (3D FLIP)</label>
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="hostToggleReveal(true)" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-tech font-bold uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-            🔓 全員翻牌
-          </button>
-          <button onclick="hostToggleReveal(false)" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-tech font-bold uppercase tracking-wider rounded-lg border border-slate-700 transition">
-            🔒 蓋牌隱藏
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 頁尾 -->
-  <footer class="w-full border-t border-slate-800/80 text-center py-4 text-xs font-mono text-slate-500">
-    CLOUD TELEPATHY // DARK TACTICAL INTERFACE
-  </footer>
-
-  <script>
-    // 核心設定
-    const SHEET_NAME = 'TelepathyData';
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSFXYewcUowOewadqncOp39xJMwK-Dv7531f04NCF0uchZ-KR9MsXDqraQeHqcnnM/exec";
-
-    // 應用程式狀態 (State)
-    let currentRoom = "";
-    let playerName = "";
-    let isRevealed = false;
-    let currentQuestion = "";
-    let pollingInterval = null;
-    let localAnswers = [];
-
-    // 1. 加入房間
-    function joinRoom() {
-      const roomInput = document.getElementById('inputRoomCode').value.trim();
-      const nameInput = document.getElementById('inputPlayerName').value.trim();
-
-      if (!roomInput || !nameInput) {
-        alert("請輸入房間代碼與玩家名稱！");
-        return;
-      }
-
-      currentRoom = roomInput.toUpperCase();
-      playerName = nameInput;
-
-      document.getElementById('currentRoomDisplay').innerText = currentRoom;
-      document.getElementById('roomBadge').classList.remove('hidden');
-      document.getElementById('loginSection').classList.add('hidden');
-      document.getElementById('gameSection').classList.remove('hidden');
-
-      // 開啟即時輪詢機制 (Polling)
-      fetchRoomState();
-      pollingInterval = setInterval(fetchRoomState, 3000);
-    }
-
-    // 2. 向 GAS 抓取最新狀態 (Polling)
-    async function fetchRoomState() {
-      if (!currentRoom || !GAS_API_URL) return;
-
-      try {
-        const response = await fetch(`${GAS_API_URL}?action=getRoomState&roomCode=${encodeURIComponent(currentRoom)}`);
-        const data = await response.json();
-
-        if (data.status === 'success') {
-          // 更新當前題目
-          if (data.question && data.question !== currentQuestion) {
-            currentQuestion = data.question;
-            document.getElementById('questionDisplay').innerText = currentQuestion;
-          }
-
-          // 更新翻牌狀態
-          isRevealed = data.isRevealed;
-
-          // 渲染卡牌
-          localAnswers = data.answers || [];
-          renderCards(localAnswers, isRevealed);
-
-          // 更新 UI 狀態標籤
-          const badge = document.getElementById('revealStatusBadge');
-          if (isRevealed) {
-            badge.innerText = "狀態：牌面已翻開 🔓";
-            badge.className = "text-xs px-3 py-1 rounded-md font-mono font-bold uppercase bg-indigo-950 text-indigo-400 border border-indigo-700 shadow-[0_0_10px_rgba(99,102,241,0.2)]";
-          } else {
-            badge.innerText = "狀態：牌面隱藏中 🔒";
-            badge.className = "text-xs px-3 py-1 rounded-md font-mono font-bold uppercase bg-slate-800 text-slate-400 border border-slate-700";
-          }
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            void: '#06050E',
+                            panel: '#0D0B1E',
+                            surface: '#14102E',
+                            cyan: '#00F0FF',
+                            pink: '#FF0055',
+                            yellow: '#FCEE0A',
+                            green: '#00FF66',
+                            purple: '#9D00FF'
+                        }
+                    },
+                    fontFamily: {
+                        cyber: ['"Orbitron"', '"Noto Sans TC"', 'sans-serif'],
+                        sans: ['"Rajdhani"', '"Noto Sans TC"', 'ui-sans-serif', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+                    }
+                }
+            }
         }
-      } catch (err) {
-        console.error("抓取輪詢資料失敗:", err);
-      }
-    }
+    </script>
 
-    // 3. 渲染 3D 翻牌動畫卡牌
-    function renderCards(answers, revealState) {
-      const grid = document.getElementById('cardsGrid');
-      grid.innerHTML = "";
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-      if (answers.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs font-mono text-slate-500">目前尚無玩家提交答案。</div>`;
-        return;
-      }
+    <style>
+        /* Cyberpunk Void & Neon Perspective Grid Background */
+        body {
+            background-color: #06050E;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 0, 85, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 20%, rgba(0, 240, 255, 0.12), transparent 40%),
+                linear-gradient(to right, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 0, 85, 0.06) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+            color: #F8FAFC;
+        }
 
-      answers.forEach(item => {
-        const cardContainer = document.createElement('div');
-        cardContainer.className = "perspective-1000 h-44 w-full";
+        /* Subtle CRT Scanline Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.14) 0px,
+                rgba(0, 0, 0, 0.14) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 60;
+        }
 
-        const cardInner = document.createElement('div');
-        cardInner.className = `relative w-full h-full duration-700 transform-style-3d transition-transform ${revealState ? 'rotate-y-180' : ''}`;
+        /* Cyberpunk Chamfered / Angled HUD Corners */
+        .cyber-cut {
+            clip-path: polygon(
+                0 0,
+                calc(100% - 16px) 0,
+                100% 16px,
+                100% 100%,
+                16px 100%,
+                0 calc(100% - 16px)
+            );
+        }
 
-        // 正面卡牌 (隱藏/鎖定狀態)
-        const cardFront = `
-          <div class="card-front absolute inset-0 w-full h-full bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-xl backface-hidden">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">PLAYER</span>
-              <span class="text-xs text-slate-600">#LOCKED</span>
+        .cyber-cut-sm {
+            clip-path: polygon(
+                0 0,
+                calc(100% - 10px) 0,
+                100% 10px,
+                100% 100%,
+                10px 100%,
+                0 calc(100% - 10px)
+            );
+        }
+
+        /* Neon Glow Utilities */
+        .glow-cyan {
+            box-shadow: 0 0 18px rgba(0, 240, 255, 0.35), inset 0 0 12px rgba(0, 240, 255, 0.12);
+        }
+        .glow-pink {
+            box-shadow: 0 0 18px rgba(255, 0, 85, 0.4), inset 0 0 12px rgba(255, 0, 85, 0.15);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 18px rgba(252, 238, 10, 0.35);
+        }
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+        }
+        .text-glow-pink {
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.75);
+        }
+
+        /* 3D Card Flip CSS Setup */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        .card-front {
+            transform: rotateY(180deg);
+        }
+
+        /* Cyberpunk Netrunner Matrix Pattern for Card Back */
+        .card-back-pattern {
+            background-color: #0B091D;
+            background-image: 
+                linear-gradient(135deg, rgba(255, 0, 85, 0.12) 25%, transparent 25%),
+                linear-gradient(225deg, rgba(0, 240, 255, 0.12) 25%, transparent 25%),
+                radial-gradient(#00F0FF 1px, transparent 1px);
+            background-size: 28px 28px, 28px 28px, 14px 14px;
+            background-position: 0 0, 14px 0, 7px 7px;
+        }
+
+        /* Shimmer & Pulse Effects */
+        @keyframes pulse-neon {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-neon 1.8s infinite ease-in-out;
+        }
+
+        /* Custom Cyberpunk Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #06050E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #FF0055, #00F0FF);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-slate-100 selection:bg-cyber-pink selection:text-white">
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MAIN HEADER -->
+    <header class="border-b border-cyber-cyan/30 bg-[#090718]/90 backdrop-blur-md px-4 py-3.5 sticky top-0 z-30 shadow-[0_4px_25px_rgba(0,240,255,0.12)]">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 cyber-cut-sm bg-cyber-pink/20 flex items-center justify-center border border-cyber-pink glow-pink text-cyber-pink text-lg">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <h1 class="font-cyber font-bold text-base md:text-lg text-white tracking-wider flex items-center gap-2.5">
+                        <span class="text-glow-cyan">雲端心電感應</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 bg-cyber-yellow text-black font-extrabold uppercase tracking-widest cyber-cut-sm">CYBER // 2077</span>
+                    </h1>
+                    <p class="text-xs text-cyber-cyan/80 hidden sm:block font-mono tracking-wider">NEURAL-LINK // 多人神經同步默契連線系統</p>
+                </div>
             </div>
-            <h4 class="text-lg font-tech font-bold text-slate-200 text-center tracking-wide">${escapeHtml(item.playerName)}</h4>
-            <div class="text-center text-slate-500 font-mono text-xs flex items-center justify-center gap-1">
-              <span>🔒</span> 已準備
+
+            <!-- Room Meta & Secret Host Toggle -->
+            <div id="header-room-info" class="hidden flex items-center gap-2.5 sm:gap-3">
+                <div class="flex items-center gap-1.5 bg-cyber-panel border border-cyber-cyan/50 cyber-cut-sm px-3.5 py-1.5 text-xs font-mono text-slate-200 cursor-pointer hover:bg-cyber-cyan/10 transition glow-cyan" onclick="copyRoomCode()">
+                    <i class="fa-solid fa-hashtag text-cyber-pink"></i>
+                    <span>NODE: <strong id="display-room-code" class="text-cyber-cyan font-bold tracking-widest">---</strong></span>
+                    <i class="fa-regular fa-copy text-cyber-yellow ml-1" title="複製房號"></i>
+                </div>
+
+                <div id="role-badge" class="px-3 py-1.5 cyber-cut-sm text-xs font-mono font-bold bg-cyber-panel text-cyber-cyan border border-cyber-cyan/40">
+                    NETRUNNER
+                </div>
+
+                <!-- Hidden Host Console Button -->
+                <button id="secret-host-btn" onclick="toggleHostConsole()" class="w-9 h-9 cyber-cut-sm flex items-center justify-center bg-cyber-panel border border-cyber-pink/50 text-cyber-pink hover:bg-cyber-pink hover:text-white transition relative glow-pink" title="控制台 (隱藏按鈕)">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                    <span id="host-indicator-dot" class="hidden absolute top-1 right-1 w-2 h-2 rounded-full bg-cyber-yellow shadow-[0_0_8px_#FCEE0A]"></span>
+                </button>
             </div>
-          </div>
-        `;
+        </div>
+    </header>
 
-        // 背面卡牌 (翻開狀態 / 顯示答案)
-        const cardBack = `
-          <div class="card-back absolute inset-0 w-full h-full bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-500/50 rounded-xl p-5 flex flex-col justify-between shadow-[0_0_20px_rgba(16,185,129,0.15)] rotate-y-180 backface-hidden">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${escapeHtml(item.playerName)}</span>
-              <span class="text-[10px] font-mono text-emerald-400">TELEPATHY</span>
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col">
+
+        <!-- LOBBY / LOGIN VIEW -->
+        <section id="lobby-view" class="flex-1 flex items-center justify-center py-8">
+            <div class="w-full max-w-md bg-cyber-panel/95 border border-cyber-cyan/40 cyber-cut p-6 sm:p-8 relative overflow-hidden glow-cyan">
+                <!-- Top Neon Accent Bar -->
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyber-pink via-cyber-yellow to-cyber-cyan"></div>
+                
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-14 h-14 cyber-cut-sm bg-cyber-surface text-cyber-cyan text-2xl mb-3 border border-cyber-cyan/60 glow-cyan">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h2 class="font-cyber text-xl font-bold text-white tracking-widest uppercase text-glow-cyan">NEURAL SYNC // 連線登入</h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1.5 font-mono">接入神經網路節點，測試小隊集體意識共鳴度</p>
+                </div>
+
+                <!-- Tabs: Join / Create -->
+                <div class="flex border-b border-slate-800 mb-6 font-mono">
+                    <button id="tab-join-btn" onclick="switchLobbyTab('join')" class="flex-1 pb-2.5 font-bold text-sm border-b-2 border-cyber-cyan text-cyber-cyan transition tracking-wider uppercase">
+                        [ 加入節點 ]
+                    </button>
+                    <button id="tab-create-btn" onclick="switchLobbyTab('create')" class="flex-1 pb-2.5 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-cyber-pink transition tracking-wider uppercase">
+                        [ 建立主機 ]
+                    </button>
+                </div>
+
+                <!-- Form Join -->
+                <form id="join-form" onsubmit="handleJoinRoom(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-mono font-bold text-cyber-cyan uppercase mb-1.5 tracking-widest">駭客代號 // HANDLE</label>
+                        <input type="text" id="join-player-name" required placeholder="輸入你的代號 (e.g. V / SILVERHAND)..." class="w-full px-4 py-3 cyber-cut-sm border border-cyber-cyan/40 focus:outline-none focus:border-cyber-cyan text-sm bg-cyber-void text-white placeholder-slate-600 font-mono transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono font-bold text-cyber-pink uppercase mb-1.5 tracking-widest">房間代碼 // ACCESS CODE</label>
+                        <input type="text" id="join-room-code" required placeholder="例如: 2077" maxlength="6" class="w-full px-4 py-3 cyber-cut-sm border border-cyber-pink/40 focus:outline-none focus:border-cyber-pink text-sm bg-cyber-void text-cyber-yellow placeholder-slate-600 uppercase font-mono tracking-[0.25em] transition">
+                    </div>
+                    <button type="submit" class="w-full py-3.5 px-4 bg-cyber-cyan hover:bg-white text-black font-cyber font-black rounded-none cyber-cut-sm text-sm uppercase tracking-widest transition glow-cyan flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plug"></i> 接入神經連線
+                    </button>
+                </form>
+
+                <!-- Form Create -->
+                <form id="create-form" onsubmit="handleCreateRoom(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-mono font-bold text-cyber-yellow uppercase mb-1.5 tracking-widest">主機指揮官 // HOST ID</label>
+                        <input type="text" id="create-host-name" required placeholder="輸入房主代號..." class="w-full px-4 py-3 cyber-cut-sm border border-cyber-yellow/50 focus:outline-none focus:border-cyber-yellow text-sm bg-cyber-void text-white placeholder-slate-600 font-mono transition">
+                    </div>
+                    <div class="bg-cyber-void/90 border border-cyber-pink/40 cyber-cut-sm p-3.5 text-xs text-slate-300 space-y-1.5">
+                        <div class="font-bold text-cyber-pink flex items-center gap-1.5 font-mono uppercase">
+                            <i class="fa-solid fa-user-secret"></i> STEALTH HOST // 潛行房主協議
+                        </div>
+                        <p class="text-slate-400 leading-relaxed">系統將自動生成 4 位數加密頻道。房主可偽裝為一般玩家同步作答，並隨時呼出隱藏控制台下達指令與全網開牌！</p>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 px-4 bg-cyber-pink hover:bg-pink-500 text-white font-cyber font-black cyber-cut-sm text-sm uppercase tracking-widest transition glow-pink flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-satellite"></i> 初始化全新頻道
+                    </button>
+                </form>
+
+                <div class="mt-6 pt-4 border-t border-cyber-cyan/20 text-center text-[11px] font-mono text-slate-500">
+                    <span class="inline-flex items-center gap-1.5 text-cyber-cyan/70">
+                        <i class="fa-solid fa-wave-square text-cyber-pink"></i> REAL-TIME POLLING & LOCAL MATRIX SYNC READY
+                    </span>
+                </div>
             </div>
-            <div class="my-auto text-center font-tech font-bold text-xl text-emerald-300 leading-snug tracking-wide">${escapeHtml(item.answer)}</div>
-            <div class="text-right text-[10px] font-mono text-slate-500">MATCH // OK</div>
-          </div>
-        `;
+        </section>
 
-        cardInner.innerHTML = cardFront + cardBack;
-        cardContainer.appendChild(cardInner);
-        grid.appendChild(cardContainer);
-      });
-    }
+        <!-- GAMEPLAY VIEW -->
+        <section id="game-view" class="hidden flex-1 flex flex-col gap-6">
 
-    // 4. 提交玩家答案
-    async function submitAnswer() {
-      const answerVal = document.getElementById('inputAnswer').value.trim();
-      if (!answerVal) {
-        alert("答案不能為空！");
-        return;
-      }
+            <!-- QUESTION CALLOUT BOX (Cyber HUD) -->
+            <div class="bg-cyber-panel/95 border border-cyber-cyan/40 cyber-cut p-5 shadow-xl relative overflow-hidden glow-cyan">
+                <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-cyber-pink via-cyber-yellow to-cyber-cyan"></div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-2">
+                    <div class="flex items-start gap-3.5">
+                        <div class="p-3 cyber-cut-sm bg-cyber-void text-cyber-pink text-xl flex-shrink-0 border border-cyber-pink/50 glow-pink">
+                            <i class="fa-solid fa-crosshairs"></i>
+                        </div>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-mono font-bold tracking-widest uppercase px-2.5 py-0.5 cyber-cut-sm bg-cyber-yellow text-black">
+                                    CYCLE <span id="display-round-num">1</span>
+                                </span>
+                                <span id="game-status-badge" class="text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/50">
+                                    同步傳輸中...
+                                </span>
+                            </div>
+                            <h2 id="display-question" class="text-lg sm:text-2xl font-bold text-white mt-2 tracking-wide text-glow-cyan">
+                                等待房主出題中...
+                            </h2>
+                        </div>
+                    </div>
 
-      const payload = {
-        action: 'submitAnswer',
-        roomCode: currentRoom,
-        question: currentQuestion,
-        playerName: playerName,
-        answer: answerVal
-      };
+                    <!-- Progress Badge -->
+                    <div class="flex items-center gap-3 bg-cyber-void px-4 py-2.5 cyber-cut-sm border border-cyber-cyan/40 self-start sm:self-center">
+                        <i class="fa-solid fa-users-viewfinder text-cyber-yellow text-base"></i>
+                        <div class="text-xs">
+                            <div class="text-slate-400 font-mono uppercase">UPLOAD STATUS</div>
+                            <div class="font-bold text-cyber-cyan text-sm font-mono" id="display-progress-text">0 / 0 人已提交</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      try {
-        await fetch(GAS_API_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        document.getElementById('inputAnswer').value = "";
-        fetchRoomState();
-      } catch (err) {
-        console.error("提交答案失敗:", err);
-      }
-    }
+            <!-- PLAYER ANSWER INPUT SECTION -->
+            <div id="answer-input-card" class="bg-cyber-panel/90 border border-cyber-pink/40 cyber-cut p-5 shadow-lg space-y-3">
+                <form id="answer-form" onsubmit="handleAnswerSubmit(event)" class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="user-answer-input" required placeholder="輸入你的第一直覺神經訊號..." class="flex-1 px-4 py-3 cyber-cut-sm border border-cyber-cyan/40 focus:outline-none focus:border-cyber-cyan text-sm bg-cyber-void text-white placeholder-slate-500 font-mono transition">
+                    <button type="submit" id="submit-answer-btn" class="px-6 py-3 bg-cyber-yellow hover:bg-yellow-300 text-black font-cyber font-black cyber-cut-sm text-sm uppercase tracking-wider transition glow-yellow flex items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-bolt"></i> 上傳訊號
+                    </button>
+                </form>
+                <div id="answer-submitted-banner" class="hidden p-3 bg-cyber-green/10 border border-cyber-green/50 cyber-cut-sm text-cyber-green text-sm flex items-center justify-between">
+                    <div class="flex items-center gap-2 font-mono font-bold text-xs sm:text-sm">
+                        <i class="fa-solid fa-shield-halved text-base"></i>
+                        <span>訊號已加密鎖定！開牌前可隨時覆寫重新上傳。</span>
+                    </div>
+                    <span class="text-xs bg-cyber-green/20 text-cyber-green border border-cyber-green/40 px-2.5 py-1 font-mono font-bold" id="submitted-answer-preview">--</span>
+                </div>
+            </div>
 
-    // 5. 隱藏房主面板控制
-    function toggleHostPanel() {
-      const modal = document.getElementById('hostModal');
-      modal.classList.toggle('hidden');
-    }
+            <!-- 3D FLIP CARDS GRID SECTION -->
+            <div class="flex-1 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 class="text-sm font-cyber font-bold text-cyber-cyan uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-cyber-pink"></i> 神經晶片陣列 // NEURAL CARDS
+                        <span id="player-count-tag" class="text-xs font-mono font-normal text-slate-400">(0 位玩家)</span>
+                    </h3>
+                    <div class="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+                        <i class="fa-solid fa-terminal text-cyber-yellow"></i> 房主觸發「開牌」時啟動全網 3D 翻轉解密
+                    </div>
+                </div>
 
-    async function hostUpdateQuestion() {
-      const qText = document.getElementById('hostQuestionInput').value.trim();
-      if (!qText || !currentRoom) return;
+                <!-- Grid of Player 3D Flip Cards -->
+                <div id="cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
 
-      const payload = {
-        action: 'createRoom',
-        roomCode: currentRoom,
-        question: qText
-      };
+            <!-- TELEPATHY MATCH ANALYTICS (Appears post reveal) -->
+            <div id="analytics-section" class="hidden bg-cyber-panel/95 border border-cyber-pink/50 cyber-cut p-6 shadow-xl space-y-4 glow-pink">
+                <div class="flex items-center gap-2 border-b border-cyber-pink/30 pb-3">
+                    <i class="fa-solid fa-chart-network text-cyber-yellow text-lg"></i>
+                    <h3 class="font-cyber font-bold text-white text-base tracking-wider uppercase text-glow-pink">神經共鳴分析報告 // TELEPATHY ANALYTICS</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="analytics-summary-cards">
+                    <!-- Stat 1 -->
+                    <div class="bg-cyber-void border border-cyber-yellow/50 cyber-cut-sm p-4">
+                        <div class="text-xs font-mono text-slate-400 uppercase">最高共鳴訊號</div>
+                        <div class="text-xl font-bold text-cyber-yellow mt-1" id="top-answer-text">--</div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="bg-cyber-void border border-cyber-cyan/50 cyber-cut-sm p-4">
+                        <div class="text-xs font-mono text-slate-400 uppercase">同步一致人數</div>
+                        <div class="text-xl font-bold text-cyber-cyan mt-1 font-mono" id="top-answer-count">0 人</div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="bg-cyber-void border border-cyber-pink/50 cyber-cut-sm p-4">
+                        <div class="text-xs font-mono text-slate-400 uppercase">小隊腦波契合率</div>
+                        <div class="text-xl font-bold text-cyber-pink mt-1 font-mono text-glow-pink" id="telepathy-score">0%</div>
+                    </div>
+                </div>
 
-      try {
-        await fetch(GAS_API_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        toggleHostPanel();
-        fetchRoomState();
-      } catch (err) {
-        console.error("房主更新題目失敗:", err);
-      }
-    }
+                <!-- Answer Groups breakdown -->
+                <div>
+                    <h4 class="text-xs font-mono font-bold uppercase text-cyber-cyan mb-2 tracking-wider">訊號分類與同步名單：</h4>
+                    <div id="answer-groups-container" class="space-y-2">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    async function hostToggleReveal(state) {
-      if (!currentRoom) return;
+    <!-- HIDDEN HOST CONSOLE MODAL / DRAWER -->
+    <div id="host-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-panel border border-cyber-pink/60 cyber-cut shadow-2xl w-full max-w-lg overflow-hidden glow-pink">
+            <!-- Modal Header -->
+            <div class="bg-cyber-void border-b border-cyber-pink/40 text-white px-5 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-terminal text-cyber-yellow"></i>
+                    <h3 class="font-cyber font-bold text-sm sm:text-base tracking-wider uppercase text-glow-pink">SYS.ADMIN // 房主控制台</h3>
+                </div>
+                <button onclick="toggleHostConsole()" class="text-cyber-pink hover:text-white text-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
 
-      const payload = {
-        action: 'revealCards',
-        roomCode: currentRoom,
-        isRevealed: state
-      };
+            <!-- Modal Content -->
+            <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                <!-- Host Access Mode -->
+                <div class="flex items-center justify-between bg-cyber-void p-3.5 cyber-cut-sm border border-cyber-cyan/30">
+                    <span class="text-xs font-mono font-bold text-cyber-cyan">ROOT 權限認證</span>
+                    <button id="toggle-host-role-btn" onclick="toggleHostRole()" class="px-3.5 py-1.5 cyber-cut-sm text-xs font-mono font-bold bg-cyber-yellow text-black hover:bg-yellow-300 transition">
+                        切換為房主權限
+                    </button>
+                </div>
 
-      try {
-        await fetch(GAS_API_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        fetchRoomState();
-      } catch (err) {
-        console.error("切換卡牌狀態失敗:", err);
-      }
-    }
+                <div id="host-controls-body" class="space-y-5">
+                    <!-- Step 1: Issue Question -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">1. 廣播新題目 // BROADCAST PROMPT</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="host-question-input" placeholder="例如：夜之城裡最危險的職業？" class="flex-1 px-3.5 py-2.5 cyber-cut-sm border border-cyber-cyan/40 focus:outline-none focus:border-cyber-cyan text-sm bg-cyber-void text-white placeholder-slate-600 font-mono">
+                            <button onclick="hostSetQuestion()" class="px-4 py-2.5 bg-cyber-cyan hover:bg-white text-black text-xs font-cyber font-black cyber-cut-sm transition whitespace-nowrap uppercase">
+                                發布題目
+                            </button>
+                        </div>
+                        <!-- Quick Question Templates -->
+                        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                            <span class="text-[11px] font-mono text-slate-500">快速題庫：</span>
+                            <button type="button" onclick="setTemplateQuestion('說到夏天會想到的水果？')" class="text-xs font-mono px-2.5 py-1 cyber-cut-sm bg-cyber-void hover:border-cyber-cyan border border-slate-700 text-slate-300 transition">夏天水果</button>
+                            <button type="button" onclick="setTemplateQuestion('聚餐最想吃的美食種類？')" class="text-xs font-mono px-2.5 py-1 cyber-cut-sm bg-cyber-void hover:border-cyber-cyan border border-slate-700 text-slate-300 transition">聚餐美食</button>
+                            <button type="button" onclick="setTemplateQuestion('代表這支小隊的代號？')" class="text-xs font-mono px-2.5 py-1 cyber-cut-sm bg-cyber-void hover:border-cyber-cyan border border-slate-700 text-slate-300 transition">小隊代號</button>
+                        </div>
+                    </div>
 
-    // HTML 跳脫字元防護
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-  </script>
+                    <!-- Step 2: Answer Status & Progress -->
+                    <div class="space-y-2 border-t border-slate-800 pt-4">
+                        <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">2. 訊號上傳進度監視</label>
+                        <div class="w-full bg-cyber-void h-3 border border-cyber-cyan/30 overflow-hidden">
+                            <div id="host-progress-bar" class="bg-gradient-to-r from-cyber-pink via-cyber-yellow to-cyber-cyan h-full w-0 transition-all duration-300"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono text-slate-400">
+                            <span id="host-progress-count">已提交: 0 / 0</span>
+                            <span id="host-progress-percent" class="text-cyber-yellow font-bold">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Action Buttons -->
+                    <div class="space-y-3 border-t border-slate-800 pt-4">
+                        <label class="block text-xs font-mono font-bold uppercase text-cyber-cyan">3. 系統核心控制 // OVERRIDE</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="hostRevealCards()" class="py-3 px-4 bg-cyber-green hover:bg-emerald-300 text-black font-cyber font-black cyber-cut-sm text-xs sm:text-sm transition shadow-[0_0_15px_rgba(0,255,102,0.35)] flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-eye"></i> 全網 3D 開牌！
+                            </button>
+                            <button onclick="hostResetNextRound()" class="py-3 px-4 bg-cyber-void hover:bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/60 font-cyber font-bold cyber-cut-sm text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-rotate-right"></i> 重置 / 下一題
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-cyber-void border-t border-cyber-pink/30 px-5 py-3 text-right">
+                <button onclick="toggleHostConsole()" class="px-4 py-1.5 cyber-cut-sm border border-slate-700 bg-cyber-panel text-slate-300 text-xs font-mono font-bold hover:border-cyber-cyan hover:text-cyber-cyan transition">
+                    [ ESC // 關閉控制台 ]
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-cyber-cyan/20 bg-[#070612] py-4 text-center text-xs font-mono text-slate-500 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>CLOUD TELEPATHY <span class="text-cyber-pink">//</span> CYBERPUNK NEURAL EDITION 2077</div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 text-cyber-green">
+                    <span class="w-2 h-2 rounded-full bg-cyber-green shadow-[0_0_8px_#00FF66]"></span> NET-LINK ONLINE
+                </span>
+                <span class="text-slate-700">|</span>
+                <button onclick="toggleHostConsole()" class="hover:text-cyber-pink font-mono text-[11px] underline transition">隱藏房主控制台</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+        const GAS_API_URL = "";
+
+        let state = {
+            roomCode: "",
+            playerName: "",
+            isHost: false,
+            round: 1,
+            question: "等待房主出題中...",
+            isRevealed: false,
+            players: {}
+        };
+
+        let syncTimer = null;
+
+        function showToast(msg, type = "info") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            const colors = {
+                info: "bg-cyber-panel border-cyber-cyan text-cyber-cyan glow-cyan",
+                success: "bg-cyber-panel border-cyber-green text-cyber-green shadow-[0_0_15px_rgba(0,255,102,0.3)]",
+                warn: "bg-cyber-panel border-cyber-pink text-cyber-pink glow-pink"
+            };
+            toast.className = `px-4 py-2.5 cyber-cut-sm border text-xs font-mono font-bold backdrop-blur-md transition-all ${colors[type] || colors.info}`;
+            toast.textContent = `> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function switchLobbyTab(tab) {
+            const joinForm = document.getElementById("join-form");
+            const createForm = document.getElementById("create-form");
+            const joinBtn = document.getElementById("tab-join-btn");
+            const createBtn = document.getElementById("tab-create-btn");
+
+            if (tab === "join") {
+                joinForm.classList.remove("hidden");
+                createForm.classList.add("hidden");
+                joinBtn.className = "flex-1 pb-2.5 font-bold text-sm border-b-2 border-cyber-cyan text-cyber-cyan transition tracking-wider uppercase";
+                createBtn.className = "flex-1 pb-2.5 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-cyber-pink transition tracking-wider uppercase";
+            } else {
+                createForm.classList.remove("hidden");
+                joinForm.classList.add("hidden");
+                createBtn.className = "flex-1 pb-2.5 font-bold text-sm border-b-2 border-cyber-pink text-cyber-pink transition tracking-wider uppercase";
+                joinBtn.className = "flex-1 pb-2.5 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-cyber-cyan transition tracking-wider uppercase";
+            }
+        }
+
+        function handleJoinRoom(e) {
+            e.preventDefault();
+            const name = document.getElementById("join-player-name").value.trim();
+            const code = document.getElementById("join-room-code").value.trim().toUpperCase();
+            if (!name || !code) return;
+
+            state.playerName = name;
+            state.roomCode = code;
+            state.isHost = false;
+
+            loadLocalRoomState();
+            state.players[name] = state.players[name] || { name, answer: "", submitted: false };
+            saveLocalRoomState();
+            enterGameRoom();
+        }
+
+        function handleCreateRoom(e) {
+            e.preventDefault();
+            const name = document.getElementById("create-host-name").value.trim();
+            if (!name) return;
+
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            state.playerName = name;
+            state.roomCode = randomCode;
+            state.isHost = true;
+            state.round = 1;
+            state.question = "等待房主出題中...";
+            state.isRevealed = false;
+            state.players = { [name]: { name, answer: "", submitted: false } };
+
+            saveLocalRoomState();
+            enterGameRoom();
+            showToast(`頻道已初始化！節點代碼：${randomCode}`, "success");
+        }
+
+        function enterGameRoom() {
+            document.getElementById("lobby-view").classList.add("hidden");
+            document.getElementById("game-view").classList.remove("hidden");
+            document.getElementById("header-room-info").classList.remove("hidden");
+            document.getElementById("display-room-code").textContent = state.roomCode;
+
+            updateRoleBadge();
+            renderAll();
+
+            if (syncTimer) clearInterval(syncTimer);
+            syncTimer = setInterval(() => {
+                loadLocalRoomState();
+                renderAll();
+            }, 2000);
+        }
+
+        function updateRoleBadge() {
+            const badge = document.getElementById("role-badge");
+            const dot = document.getElementById("host-indicator-dot");
+            const toggleBtn = document.getElementById("toggle-host-role-btn");
+            if (state.isHost) {
+                badge.textContent = "SYS.ADMIN";
+                badge.className = "px-3 py-1.5 cyber-cut-sm text-xs font-mono font-bold bg-cyber-yellow text-black glow-yellow";
+                dot.classList.remove("hidden");
+                toggleBtn.textContent = "ROOT 權限已啟用 ✓";
+            } else {
+                badge.textContent = "NETRUNNER";
+                badge.className = "px-3 py-1.5 cyber-cut-sm text-xs font-mono font-bold bg-cyber-panel text-cyber-cyan border border-cyber-cyan/40";
+                dot.classList.add("hidden");
+                toggleBtn.textContent = "切換為房主權限";
+            }
+        }
+
+        function toggleHostConsole() {
+            document.getElementById("host-modal").classList.toggle("hidden");
+        }
+
+        function toggleHostRole() {
+            state.isHost = !state.isHost;
+            updateRoleBadge();
+            showToast(state.isHost ? "ROOT 管理權限已覆寫啟動" : "已切回一般駭客視角", "warn");
+        }
+
+        function setTemplateQuestion(q) {
+            document.getElementById("host-question-input").value = q;
+        }
+
+        function hostSetQuestion() {
+            const q = document.getElementById("host-question-input").value.trim();
+            if (!q) return;
+            state.question = q;
+            state.isRevealed = false;
+            saveLocalRoomState();
+            renderAll();
+            toggleHostConsole();
+            showToast("新題目訊號已全網廣播！", "success");
+        }
+
+        function hostRevealCards() {
+            state.isRevealed = true;
+            saveLocalRoomState();
+            renderAll();
+            toggleHostConsole();
+            showToast("執行全網 3D 晶片解密開牌！", "success");
+        }
+
+        function hostResetNextRound() {
+            state.round += 1;
+            state.isRevealed = false;
+            state.question = "等待房主出題中...";
+            Object.keys(state.players).forEach(k => {
+                state.players[k].answer = "";
+                state.players[k].submitted = false;
+            });
+            document.getElementById("user-answer-input").value = "";
+            document.getElementById("answer-submitted-banner").classList.add("hidden");
+            saveLocalRoomState();
+            renderAll();
+            showToast(`系統重置：進入 CYCLE ${state.round}`, "info");
+        }
+
+        function handleAnswerSubmit(e) {
+            e.preventDefault();
+            const ans = document.getElementById("user-answer-input").value.trim();
+            if (!ans) return;
+
+            state.players[state.playerName] = {
+                name: state.playerName,
+                answer: ans,
+                submitted: true
+            };
+            saveLocalRoomState();
+
+            document.getElementById("answer-submitted-banner").classList.remove("hidden");
+            document.getElementById("submitted-answer-preview").textContent = ans;
+            renderAll();
+            showToast("神經訊號上傳完成！", "success");
+        }
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText(state.roomCode);
+            showToast(`已複製節點代碼：${state.roomCode}`, "info");
+        }
+
+        function saveLocalRoomState() {
+            const key = `telepathy_room_${state.roomCode}`;
+            localStorage.setItem(key, JSON.stringify({
+                round: state.round,
+                question: state.question,
+                isRevealed: state.isRevealed,
+                players: state.players
+            }));
+        }
+
+        function loadLocalRoomState() {
+            const key = `telepathy_room_${state.roomCode}`;
+            const raw = localStorage.getItem(key);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            state.round = saved.round || 1;
+            state.question = saved.question || "等待房主出題中...";
+            state.isRevealed = !!saved.isRevealed;
+            state.players = { ...saved.players, ...state.players };
+            Object.keys(saved.players || {}).forEach(p => {
+                if (p !== state.playerName) {
+                    state.players[p] = saved.players[p];
+                } else if (!state.players[p]?.submitted && saved.players[p]?.submitted) {
+                    state.players[p] = saved.players[p];
+                }
+            });
+        }
+
+        function renderAll() {
+            document.getElementById("display-round-num").textContent = state.round;
+            document.getElementById("display-question").textContent = state.question;
+
+            const statusBadge = document.getElementById("game-status-badge");
+            if (state.isRevealed) {
+                statusBadge.textContent = "DECRYPTED // 已開牌";
+                statusBadge.className = "text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-green/20 text-cyber-green border border-cyber-green/50";
+            } else {
+                statusBadge.textContent = "同步傳輸中...";
+                statusBadge.className = "text-xs px-2.5 py-0.5 cyber-cut-sm font-mono font-bold bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/50";
+            }
+
+            const playerList = Object.values(state.players);
+            const total = playerList.length;
+            const submittedCount = playerList.filter(p => p.submitted).length;
+            const pct = total > 0 ? Math.round((submittedCount / total) * 100) : 0;
+
+            document.getElementById("display-progress-text").textContent = `${submittedCount} / ${total} 人已提交`;
+            document.getElementById("player-count-tag").textContent = `(${total} 位駭客)`;
+            document.getElementById("host-progress-bar").style.width = `${pct}%`;
+            document.getElementById("host-progress-count").textContent = `已提交: ${submittedCount} / ${total}`;
+            document.getElementById("host-progress-percent").textContent = `${pct}%`;
+
+            renderCards(playerList);
+            renderAnalytics(playerList);
+        }
+
+        function renderCards(playerList) {
+            const grid = document.getElementById("cards-grid");
+            grid.innerHTML = "";
+
+            playerList.forEach(p => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "perspective-1000 h-44";
+
+                const statusPill = p.submitted
+                    ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 cyber-cut-sm bg-cyber-green/20 text-cyber-green border border-cyber-green/50"><i class="fa-solid fa-check mr-1"></i>LOCKED</span>`
+                    : `<span class="text-[11px] font-mono px-2.5 py-0.5 cyber-cut-sm bg-cyber-pink/15 text-cyber-pink border border-cyber-pink/40 animate-pulse-subtle">SYNCING...</span>`;
+
+                wrapper.innerHTML = `
+                    <div class="card-inner ${state.isRevealed ? "is-flipped" : ""}">
+                        <!-- CARD BACK (Encrypted State) -->
+                        <div class="card-face card-back-pattern cyber-cut border border-cyber-cyan/40 p-4 flex flex-col justify-between shadow-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-mono font-bold text-cyber-pink tracking-widest">NODE // ID</span>
+                                <i class="fa-solid fa-lock text-cyber-cyan text-xs"></i>
+                            </div>
+                            <div class="text-center my-auto">
+                                <div class="font-cyber font-bold text-base text-white truncate tracking-wide">${escapeHtml(p.name)}</div>
+                            </div>
+                            <div class="text-center">${statusPill}</div>
+                        </div>
+
+                        <!-- CARD FRONT (Decrypted Answer) -->
+                        <div class="card-face card-front bg-gradient-to-br from-[#120D2B] to-[#06050E] cyber-cut border border-cyber-pink p-4 flex flex-col justify-between glow-pink">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] font-mono font-bold text-cyber-yellow truncate max-w-[75%]">${escapeHtml(p.name)}</span>
+                                <i class="fa-solid fa-bolt text-cyber-cyan text-xs"></i>
+                            </div>
+                            <div class="my-auto text-center font-bold text-lg text-white break-words leading-snug text-glow-cyan">
+                                ${p.submitted ? escapeHtml(p.answer) : '<span class="text-slate-600 text-xs font-mono">NO_SIGNAL</span>'}
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] font-mono">
+                                <span class="text-cyber-pink">2077</span>
+                                <span class="text-cyber-green">SYNC // OK</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(wrapper);
+            });
+        }
+
+        function renderAnalytics(playerList) {
+            const section = document.getElementById("analytics-section");
+            if (!state.isRevealed) {
+                section.classList.add("hidden");
+                return;
+            }
+            section.classList.remove("hidden");
+
+            const answered = playerList.filter(p => p.submitted && p.answer);
+            if (answered.length === 0) return;
+
+            const groups = {};
+            answered.forEach(p => {
+                const key = p.answer.trim().toLowerCase();
+                if (!groups[key]) groups[key] = { label: p.answer.trim(), players: [] };
+                groups[key].players.push(p.name);
+            });
+
+            const sorted = Object.values(groups).sort((a, b) => b.players.length - a.players.length);
+            const top = sorted[0];
+            const score = Math.round((top.players.length / answered.length) * 100);
+
+            document.getElementById("top-answer-text").textContent = top.label;
+            document.getElementById("top-answer-count").textContent = `${top.players.length} 人`;
+            document.getElementById("telepathy-score").textContent = `${score}%`;
+
+            const container = document.getElementById("answer-groups-container");
+            container.innerHTML = sorted.map(g => `
+                <div class="flex items-center justify-between bg-cyber-void border border-cyber-cyan/30 cyber-cut-sm px-4 py-2.5 text-xs">
+                    <span class="font-bold text-cyber-yellow">${escapeHtml(g.label)}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-300 font-mono">${g.players.map(escapeHtml).join("、")}</span>
+                        <span class="font-mono font-bold px-2 py-0.5 bg-cyber-pink/20 text-cyber-pink border border-cyber-pink/50">${g.players.length} 票</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
 </body>
 </html>
