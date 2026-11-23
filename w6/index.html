@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VICE VOTE // 霓虹二選一決策終端</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Orbitron (賽博標題), Rajdhani (HUD 數據), Noto Sans TC (繁體中文) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vice: {
+              bg: '#080312',
+              card: '#120824',
+              pink: '#ff2a85',
+              cyan: '#00f0ff',
+              purple: '#9d4edd',
+              gold: '#ffbe0b',
+              sunset: '#ff6b35'
+            }
+          },
+          fontFamily: {
+            cyber: ['Orbitron', 'Noto Sans TC', 'sans-serif'],
+            hud: ['Rajdhani', 'Noto Sans TC', 'sans-serif'],
+            sans: ['Noto Sans TC', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --neon-pink: #ff2a85;
+      --neon-cyan: #00f0ff;
+      --neon-gold: #ffbe0b;
+      --vice-dark: #080312;
+    }
+
+    body {
+      background-color: var(--vice-dark);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(255, 42, 133, 0.22) 0%, transparent 42%),
+        radial-gradient(circle at 85% 20%, rgba(0, 240, 255, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 50% 95%, rgba(157, 78, 221, 0.25) 0%, transparent 50%),
+        linear-gradient(180deg, #080312 0%, #130726 55%, #090314 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 賽博格線地板與 CRT 掃描線效果 */
+    .cyber-grid {
+      background-size: 36px 36px;
+      background-image:
+        linear-gradient(to right, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 42, 133, 0.06) 1px, transparent 1px);
+    }
+
+    .scanlines::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.14),
+        rgba(0, 0, 0, 0.14) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+
+    /* GTA 6 / Vice City 霓虹光暈 */
+    .neon-text-pink {
+      text-shadow: 0 0 8px rgba(255, 42, 133, 0.8), 0 0 22px rgba(255, 42, 133, 0.45);
+    }
+    .neon-text-cyan {
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 22px rgba(0, 240, 255, 0.45);
+    }
+    .neon-box-pink {
+      box-shadow: 0 0 18px rgba(255, 42, 133, 0.25), inset 0 0 12px rgba(255, 42, 133, 0.12);
+    }
+    .neon-box-cyan {
+      box-shadow: 0 0 18px rgba(0, 240, 255, 0.25), inset 0 0 12px rgba(0, 240, 255, 0.12);
+    }
+
+    /* 切角賽博面板 */
+    .cyber-panel {
+      background: rgba(18, 8, 36, 0.84);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 42, 133, 0.35);
+      clip-path: polygon(
+        0 14px, 14px 0,
+        calc(100% - 14px) 0, 100% 14px,
+        100% calc(100% - 14px), calc(100% - 14px) 100%,
+        14px 100%, 0 calc(100% - 14px)
+      );
+    }
+
+    /* 相機 1:1 準星取景框 */
+    .viewfinder-corner {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .vf-tl { top: 8px; left: 8px; border-top: 2px solid #00f0ff; border-left: 2px solid #00f0ff; }
+    .vf-tr { top: 8px; right: 8px; border-top: 2px solid #00f0ff; border-right: 2px solid #00f0ff; }
+    .vf-bl { bottom: 8px; left: 8px; border-bottom: 2px solid #ff2a85; border-left: 2px solid #ff2a85; }
+    .vf-br { bottom: 8px; right: 8px; border-bottom: 2px solid #ff2a85; border-right: 2px solid #ff2a85; }
+
+    /* GTA 風格按鈕 */
+    .btn-vice {
+      background: linear-gradient(135deg, #ff2a85 0%, #9d4edd 50%, #00f0ff 100%);
+      background-size: 200% 200%;
+      transition: all 0.25s ease;
+    }
+    .btn-vice:hover:not(:disabled) {
+      background-position: 100% 50%;
+      box-shadow: 0 0 24px rgba(255, 42, 133, 0.65), 0 0 36px rgba(0, 240, 255, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-vice:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* 自訂捲軸與日期時間選擇器配色 */
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) sepia(1) saturate(5) hue-rotate(155deg);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="cyber-grid scanlines selection:bg-vice-pink selection:text-white">
+
+  <!-- 頂部 HUD 導覽列 -->
+  <header class="sticky top-0 z-40 border-b border-vice-pink/30 bg-[#080312]/90 backdrop-blur-md">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- 左側 Logo：點擊可快速回到「建立新投票」 -->
+      <button onclick="switchToCreateMode()" class="flex items-center gap-2.5 text-left group focus:outline-none">
+        <div class="w-9 h-9 rounded bg-gradient-to-br from-vice-pink via-vice-purple to-vice-cyan p-[1.5px]">
+          <div class="w-full h-full bg-[#080312] flex items-center justify-center font-cyber font-black text-sm text-vice-cyan group-hover:text-vice-pink transition">
+            VI
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-cyber font-black tracking-wider text-base sm:text-lg bg-gradient-to-r from-vice-pink via-vice-gold to-vice-cyan bg-clip-text text-transparent">
+              VICE VOTE
+            </span>
+            <span class="text-[10px] font-hud uppercase px-1.5 py-0.5 rounded bg-vice-pink/20 border border-vice-pink/50 text-vice-pink">
+              1:1 CAM
+            </span>
+          </div>
+          <p class="text-[11px] font-hud text-slate-400 tracking-widest uppercase">
+            LEONIDA DECISION TERMINAL // 拍照二選一
+          </p>
+        </div>
+      </button>
+
+      <!-- 右上角區域：模式切換 + 隱藏管理員開票彩蛋 -->
+      <div class="flex items-center gap-2">
+        <!-- 模擬測試切換（方便無網路或 GAS 尚未設定時在 CodePen 測試） -->
+        <button id="mockToggleBtn" onclick="toggleMockMode()" title="切換雲端 GAS / 本地模擬測試模式"
+          class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-hud tracking-wider border border-vice-cyan/40 text-vice-cyan bg-vice-cyan/10 hover:bg-vice-cyan/20 transition">
+          <span id="mockDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="mockLabel">GAS LIVE</span>
+        </button>
+
+        <!-- 隱藏管理員彩蛋觸發點（點擊 3 次開啟提前開票面板） -->
+        <button id="secretAdminTrigger" onclick="handleSecretTrigger()" title="VICE // 305"
+          class="relative px-2.5 py-1.5 rounded border border-white/10 hover:border-vice-gold/50 bg-white/5 text-slate-400 hover:text-vice-gold transition select-none flex items-center gap-1.5">
+          <span class="text-xs">🌴</span>
+          <span class="font-hud text-xs tracking-widest">305</span>
+          <span id="secretClickBadge" class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-vice-gold text-[#080312] font-cyber font-bold text-[10px] flex items-center justify-center">
+            1
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="max-w-3xl mx-auto px-4 py-6 pb-20">
+
+    <!-- 全域狀態提示橫幅 -->
+    <div id="statusBanner" class="hidden mb-5 px-4 py-3 rounded border font-hud text-sm flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span id="statusIcon" class="text-lg">⚡</span>
+        <span id="statusText">系統連線中...</span>
+      </div>
+      <button onclick="hideBanner()" class="text-xs opacity-70 hover:opacity-100">✕</button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 視圖 1：建立投票模式 (CREATE VIEW)                         -->
+    <!-- ========================================================= -->
+    <section id="createView" class="space-y-6">
+      <div class="cyber-panel p-5 sm:p-7 neon-box-pink">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+          <div>
+            <span class="text-xs font-hud tracking-widest text-vice-cyan uppercase">// MISSION SETUP</span>
+            <h1 class="text-xl sm:text-2xl font-cyber font-extrabold tracking-wide text-white mt-0.5">
+              建立即時拍照二選一投票
+            </h1>
+          </div>
+          <span class="hidden sm:inline-block font-hud text-xs px-2.5 py-1 rounded bg-vice-purple/25 border border-vice-purple/50 text-purple-200">
+            AUTO 800×800px
+          </span>
+        </div>
+
+        <!-- 步驟 1：投票題目 -->
+        <div class="mb-6">
+          <label class="block font-hud text-sm uppercase tracking-wider text-vice-cyan mb-2">
+            01. 決策主題 / QUESTION <span class="text-vice-pink">*</span>
+          </label>
+          <input id="pollQuestion" type="text" maxlength="80"
+            placeholder="例如：今天午餐吃哪一間？ / 社團海報選 A 還是 B？"
+            class="w-full px-4 py-3 rounded bg-[#090414] border border-vice-cyan/40 focus:border-vice-pink focus:outline-none text-white placeholder-slate-500 text-base transition" />
+        </div>
+
+        <!-- 步驟 2：A / B 兩張 1:1 拍照上傳區 -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <label class="font-hud text-sm uppercase tracking-wider text-vice-cyan">
+              02. 現場拍攝或上傳選項照片 (自動 1:1 裁切) <span class="text-vice-pink">*</span>
+            </label>
+            <span class="text-xs font-hud text-slate-400">JPEG 800px 壓縮</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 選項 A 卡片 -->
+            <div class="bg-[#0a0417] border border-vice-pink/50 rounded-lg p-3.5 neon-box-pink flex flex-col">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-cyber font-bold text-sm text-vice-pink neon-text-pink">OPTION // A</span>
+                <span id="badgeA" class="text-[11px] font-hud px-2 py-0.5 rounded bg-white/5 text-slate-400">尚未拍攝</span>
+              </div>
+
+              <!-- 1:1 正方形取景預覽窗 -->
+              <div class="relative w-full aspect-square rounded bg-[#05020b] border border-dashed border-vice-pink/40 overflow-hidden flex items-center justify-center group">
+                <div class="viewfinder-corner vf-tl"></div>
+                <div class="viewfinder-corner vf-tr"></div>
+                <div class="viewfinder-corner vf-bl"></div>
+                <div class="viewfinder-corner vf-br"></div>
+
+                <img id="previewA" class="hidden w-full h-full object-cover" alt="選項 A 預覽" />
+                <div id="placeholderA" class="text-center p-4">
+                  <div class="text-3xl mb-2">📸</div>
+                  <p class="font-hud text-sm text-slate-300">點擊下方按鈕拍攝 A 照片</p>
+                  <p class="text-[11px] text-slate-500 mt-1">自動置中裁切為 1:1 正方形</p>
+                </div>
+              </div>
+
+              <!-- 選項 A 說明文字（選填） -->
+              <input id="labelA" type="text" maxlength="30" placeholder="選項 A 標籤（選填，預設：選項 A）"
+                class="mt-3 w-full px-3 py-1.5 rounded bg-[#080312] border border-white/15 focus:border-vice-pink focus:outline-none text-xs text-white placeholder-slate-500" />
+
+              <!-- 拍照與選圖雙按鈕（支援手機直開相機與桌面/CodePen選圖） -->
+              <div class="grid grid-cols-2 gap-2 mt-2.5">
+                <label class="cursor-pointer py-2 px-2 rounded bg-vice-pink/20 hover:bg-vice-pink/35 border border-vice-pink/60 text-center font-hud text-xs font-bold text-vice-pink transition flex items-center justify-center gap-1">
+                  <span>📷 立即拍照</span>
+                  <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event, 'A')" />
+                </label>
+                <label class="cursor-pointer py-2 px-2 rounded bg-white/5 hover:bg-white/15 border border-white/20 text-center font-hud text-xs text-slate-200 transition flex items-center justify-center gap-1">
+                  <span>🖼️ 相簿選圖</span>
+                  <input type="file" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'A')" />
+                </label>
+              </div>
+            </div>
+
+            <!-- 選項 B 卡片 -->
+            <div class="bg-[#0a0417] border border-vice-cyan/50 rounded-lg p-3.5 neon-box-cyan flex flex-col">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-cyber font-bold text-sm text-vice-cyan neon-text-cyan">OPTION // B</span>
+                <span id="badgeB" class="text-[11px] font-hud px-2 py-0.5 rounded bg-white/5 text-slate-400">尚未拍攝</span>
+              </div>
+
+              <!-- 1:1 正方形取景預覽窗 -->
+              <div class="relative w-full aspect-square rounded bg-[#05020b] border border-dashed border-vice-cyan/40 overflow-hidden flex items-center justify-center group">
+                <div class="viewfinder-corner vf-tl"></div>
+                <div class="viewfinder-corner vf-tr"></div>
+                <div class="viewfinder-corner vf-bl"></div>
+                <div class="viewfinder-corner vf-br"></div>
+
+                <img id="previewB" class="hidden w-full h-full object-cover" alt="選項 B 預覽" />
+                <div id="placeholderB" class="text-center p-4">
+                  <div class="text-3xl mb-2">📸</div>
