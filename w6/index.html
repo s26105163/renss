@@ -298,3 +298,884 @@
                 <img id="previewB" class="hidden w-full h-full object-cover" alt="選項 B 預覽" />
                 <div id="placeholderB" class="text-center p-4">
                   <div class="text-3xl mb-2">📸</div>
+                  <p class="font-hud text-sm text-slate-300">點擊下方按鈕拍攝 B 照片</p>
+                  <p class="text-[11px] text-slate-500 mt-1">自動置中裁切為 1:1 正方形</p>
+                </div>
+              </div>
+
+              <!-- 選項 B 說明文字（選填） -->
+              <input id="labelB" type="text" maxlength="30" placeholder="選項 B 標籤（選填，預設：選項 B）"
+                class="mt-3 w-full px-3 py-1.5 rounded bg-[#080312] border border-white/15 focus:border-vice-cyan focus:outline-none text-xs text-white placeholder-slate-500" />
+
+              <!-- 拍照與選圖雙按鈕 -->
+              <div class="grid grid-cols-2 gap-2 mt-2.5">
+                <label class="cursor-pointer py-2 px-2 rounded bg-vice-cyan/20 hover:bg-vice-cyan/35 border border-vice-cyan/60 text-center font-hud text-xs font-bold text-vice-cyan transition flex items-center justify-center gap-1">
+                  <span>📷 立即拍照</span>
+                  <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event, 'B')" />
+                </label>
+                <label class="cursor-pointer py-2 px-2 rounded bg-white/5 hover:bg-white/15 border border-white/20 text-center font-hud text-xs text-slate-200 transition flex items-center justify-center gap-1">
+                  <span>🖼️ 相簿選圖</span>
+                  <input type="file" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'B')" />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 步驟 3：精確截止時間設定 -->
+        <div class="mb-7">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <label class="font-hud text-sm uppercase tracking-wider text-vice-cyan">
+              03. 精確開票截止時間 (幾點幾分) <span class="text-vice-pink">*</span>
+            </label>
+            <!-- 快速時間預設按鈕 -->
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="setQuickDeadline(2)" class="px-2 py-0.5 rounded text-[11px] font-hud bg-white/5 hover:bg-vice-gold/20 border border-white/15 hover:border-vice-gold text-slate-300 hover:text-vice-gold transition">+2分(測試)</button>
+              <button type="button" onclick="setQuickDeadline(15)" class="px-2 py-0.5 rounded text-[11px] font-hud bg-white/5 hover:bg-vice-cyan/20 border border-white/15 hover:border-vice-cyan text-slate-300 hover:text-vice-cyan transition">+15分</button>
+              <button type="button" onclick="setQuickDeadline(60)" class="px-2 py-0.5 rounded text-[11px] font-hud bg-white/5 hover:bg-vice-cyan/20 border border-white/15 hover:border-vice-cyan text-slate-300 hover:text-vice-cyan transition">+1小時</button>
+            </div>
+          </div>
+          <input id="pollEndTime" type="datetime-local"
+            class="w-full px-4 py-3 rounded bg-[#090414] border border-vice-cyan/40 focus:border-vice-pink focus:outline-none text-white font-hud text-base" />
+        </div>
+
+        <!-- 送出建立按鈕 -->
+        <button id="createPollBtn" onclick="submitCreatePoll()"
+          class="btn-vice w-full py-4 rounded-lg font-cyber font-black text-base sm:text-lg tracking-widest text-white uppercase shadow-lg flex items-center justify-center gap-2">
+          <span>🚀 上傳雲端並產生專屬投票連結</span>
+        </button>
+      </div>
+
+      <!-- CodePen / 測試小提示 -->
+      <div class="px-4 py-3 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="text-vice-gold font-hud font-bold">CODEPEN / 測試提示：</span>
+          若尚未部署對應 GAS 或遇跨域限制，可切換右上角 <span class="text-vice-cyan font-hud">GAS LIVE / DEMO</span> 體驗完整流程；建立後也會顯示專屬 <code class="text-vice-pink">?poll=P...</code> 連結。
+        </div>
+        <button onclick="toggleMockMode()" class="shrink-0 px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white font-hud">
+          切換測試模式
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 視圖 2：投票與開票結果模式 (POLL / VOTE VIEW)              -->
+    <!-- ========================================================= -->
+    <section id="voteView" class="hidden space-y-6">
+
+      <!-- 專屬分享連結橫幅（房主建立後或隨時分享給朋友） -->
+      <div id="shareBar" class="cyber-panel p-4 border-vice-cyan/50 neon-box-cyan">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-hud uppercase tracking-widest text-vice-cyan">SHARE POLL LINK // 專屬投票網址</span>
+              <span id="displayPollId" class="text-[11px] font-cyber px-2 py-0.5 rounded bg-vice-pink/20 text-vice-pink border border-vice-pink/40">
+                P000000
+              </span>
+            </div>
+            <input id="shareUrlInput" type="text" readonly
+              class="mt-1.5 w-full bg-[#06020d] border border-white/15 rounded px-3 py-1.5 text-xs font-mono text-slate-300 focus:outline-none" />
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="copyShareUrl()"
+              class="px-4 py-2 rounded bg-vice-cyan/20 hover:bg-vice-cyan/35 border border-vice-cyan text-vice-cyan font-hud font-bold text-xs tracking-wider transition">
+              📋 複製連結
+            </button>
+            <button onclick="switchToCreateMode()"
+              class="px-3 py-2 rounded bg-white/5 hover:bg-white/15 border border-white/20 text-slate-300 font-hud text-xs transition">
+              ＋ 新投票
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主投票 / 開票卡片 -->
+      <div class="cyber-panel p-5 sm:p-7 neon-box-pink">
+        <!-- 倒數計時器與狀態 HUD -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span id="livePulse" class="w-2.5 h-2.5 rounded-full bg-vice-pink animate-ping"></span>
+            <span id="pollStateBadge" class="font-cyber text-xs tracking-widest uppercase text-vice-pink">
+              LIVE VOTING // 投票進行中
+            </span>
+          </div>
+
+          <!-- 倒數時鐘 -->
+          <div class="flex items-center gap-2 bg-[#07020f] px-3.5 py-1.5 rounded border border-vice-gold/40">
+            <span class="text-[11px] font-hud text-slate-400 uppercase">開票倒數</span>
+            <span id="countdownDisplay" class="font-cyber font-bold text-sm sm:text-base text-vice-gold tracking-wider">
+              --:--:--
+            </span>
+          </div>
+        </div>
+
+        <!-- 投票題目 -->
+        <h2 id="viewQuestion" class="text-xl sm:text-2xl font-cyber font-black text-white leading-snug mb-6">
+          載入投票題目中...
+        </h2>
+
+        <!-- A / B 選項對決網格 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <!-- 選項 A -->
+          <div id="cardOptionA" class="relative rounded-xl bg-[#0a0417] border-2 border-vice-pink/50 p-3.5 transition-all duration-300 flex flex-col">
+            <!-- 勝出皇冠徽章（開票後顯示） -->
+            <div id="winnerTagA" class="hidden absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-0.5 rounded-full bg-vice-gold text-[#080312] font-cyber font-black text-xs tracking-wider shadow-lg">
+              👑 WINNER // 勝出
+            </div>
+
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-cyber font-bold text-sm text-vice-pink">OPTION // A</span>
+              <span id="votedCheckA" class="hidden text-xs font-hud px-2 py-0.5 rounded bg-vice-pink text-white font-bold">✓ 已投此項</span>
+            </div>
+
+            <!-- 1:1 正方形展示窗 -->
+            <div class="relative w-full aspect-square rounded-lg overflow-hidden bg-[#05020b] border border-white/10">
+              <div class="viewfinder-corner vf-tl"></div>
+              <div class="viewfinder-corner vf-br"></div>
+              <img id="viewImgA" src="" alt="選項 A" class="w-full h-full object-cover" />
+            </div>
+
+            <p id="viewLabelA" class="mt-3 font-bold text-base text-white text-center">選項 A</p>
+
+            <!-- 投票按鈕（進行中顯示） -->
+            <button id="voteBtnA" onclick="castVote('A')"
+              class="mt-3 w-full py-3 rounded-lg bg-vice-pink/20 hover:bg-vice-pink border border-vice-pink text-white font-cyber font-bold text-sm tracking-wider transition shadow-md">
+              ⚡ 投給 A
+            </button>
+
+            <!-- 開票進度條（開票後顯示） -->
+            <div id="resultBoxA" class="hidden mt-3 pt-3 border-t border-white/10">
+              <div class="flex items-baseline justify-between mb-1.5">
+                <span id="pctA" class="font-cyber font-black text-2xl text-vice-pink neon-text-pink">0%</span>
+                <span id="countA" class="font-hud text-sm text-slate-300">0 票</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-[#05020b] overflow-hidden border border-white/10">
+                <div id="barA" class="h-full bg-gradient-to-r from-vice-pink to-vice-purple transition-all duration-700" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 選項 B -->
+          <div id="cardOptionB" class="relative rounded-xl bg-[#0a0417] border-2 border-vice-cyan/50 p-3.5 transition-all duration-300 flex flex-col">
+            <!-- 勝出皇冠徽章（開票後顯示） -->
+            <div id="winnerTagB" class="hidden absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-0.5 rounded-full bg-vice-gold text-[#080312] font-cyber font-black text-xs tracking-wider shadow-lg">
+              👑 WINNER // 勝出
+            </div>
+
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-cyber font-bold text-sm text-vice-cyan">OPTION // B</span>
+              <span id="votedCheckB" class="hidden text-xs font-hud px-2 py-0.5 rounded bg-vice-cyan text-[#080312] font-bold">✓ 已投此項</span>
+            </div>
+
+            <!-- 1:1 正方形展示窗 -->
+            <div class="relative w-full aspect-square rounded-lg overflow-hidden bg-[#05020b] border border-white/10">
+              <div class="viewfinder-corner vf-tr"></div>
+              <div class="viewfinder-corner vf-bl"></div>
+              <img id="viewImgB" src="" alt="選項 B" class="w-full h-full object-cover" />
+            </div>
+
+            <p id="viewLabelB" class="mt-3 font-bold text-base text-white text-center">選項 B</p>
+
+            <!-- 投票按鈕（進行中顯示） -->
+            <button id="voteBtnB" onclick="castVote('B')"
+              class="mt-3 w-full py-3 rounded-lg bg-vice-cyan/20 hover:bg-vice-cyan hover:text-[#080312] border border-vice-cyan text-white font-cyber font-bold text-sm tracking-wider transition shadow-md">
+              ⚡ 投給 B
+            </button>
+
+            <!-- 開票進度條（開票後顯示） -->
+            <div id="resultBoxB" class="hidden mt-3 pt-3 border-t border-white/10">
+              <div class="flex items-baseline justify-between mb-1.5">
+                <span id="pctB" class="font-cyber font-black text-2xl text-vice-cyan neon-text-cyan">0%</span>
+                <span id="countB" class="font-hud text-sm text-slate-300">0 票</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-[#05020b] overflow-hidden border border-white/10">
+                <div id="barB" class="h-full bg-gradient-to-r from-vice-cyan to-blue-500 transition-all duration-700" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部資訊列：總票數與重新整理 -->
+        <div class="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs font-hud text-slate-400">
+          <div>
+            截止時間：<span id="viewDeadlineText" class="text-slate-200">--</span>
+            <span class="mx-2">|</span>
+            總投票數：<span id="totalVotesText" class="text-vice-gold font-bold">0</span> 票
+          </div>
+          <button onclick="refreshCurrentPoll()" class="px-3 py-1 rounded bg-white/5 hover:bg-white/15 border border-white/15 text-slate-200 transition">
+            ↻ 同步最新票數
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- 隱藏管理員彩蛋 Modal（點擊右上角 🌴 305 三次開啟）         -->
+  <!-- ========================================================= -->
+  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="cyber-panel max-w-md w-full p-6 border-vice-gold neon-box-pink">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🕶️</span>
+          <h3 class="font-cyber font-bold text-base text-vice-gold tracking-wider">
+            HOST OVERRIDE // 隱藏管理員控制台
+          </h3>
+        </div>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <p class="text-sm text-slate-300 leading-relaxed mb-4">
+        已解鎖房主隱藏權限。你可以立即強制結束目前進行中的投票並公開開票結果，或切換測試模式。
+      </p>
+
+      <div id="adminPollInfo" class="p-3 rounded bg-[#07020f] border border-white/10 text-xs font-hud text-slate-300 mb-5 space-y-1">
+        <div>目前投票 ID：<span id="adminPollIdText" class="text-vice-cyan">無</span></div>
+        <div>目前狀態：<span id="adminPollStatusText" class="text-vice-pink">--</span></div>
+      </div>
+
+      <div class="space-y-2.5">
+        <button id="forceRevealBtn" onclick="adminForceClosePoll()"
+          class="w-full py-3 rounded-lg bg-gradient-to-r from-vice-gold to-vice-sunset text-[#080312] font-cyber font-black text-sm tracking-wider hover:brightness-110 transition">
+          🔓 立即提前結束並公布開票結果
+        </button>
+        <button onclick="closeAdminModal()"
+          class="w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-slate-300 font-hud text-xs">
+          取消返回
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 核心邏輯 (Canvas 1:1 裁切壓縮 + GAS API + 倒數 + 彩蛋)     -->
+  <!-- ========================================================= -->
+  <script>
+    // 1. Google Apps Script Web App API 網址
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz6kyyCW8EcJGI7mIwhvRWKJR8giYRSf7XO7L0_ep8FXYYd4DweOHRA_BgrzFbgUibK/exec";
+
+    // 全域狀態管理
+    const state = {
+      imageBase64A: "",
+      imageBase64B: "",
+      currentPollId: null,
+      currentPoll: null,
+      countdownTimer: null,
+      secretClicks: 0,
+      secretTimer: null,
+      useMockMode: false // 預設連線真實 GAS；可切換為本地模擬模式在 CodePen 離線測試
+    };
+
+    // 初始化
+    window.addEventListener("DOMContentLoaded", () => {
+      setQuickDeadline(30); // 預設截止時間為 30 分鐘後
+      const pollId = getPollIdFromUrl();
+      if (pollId) {
+        loadPoll(pollId);
+      } else {
+        switchToCreateMode();
+      }
+    });
+
+    // ---------------------------------------------------------
+    // URL 參數解析（同時相容 GitHub Pages 的 ?poll= 與 CodePen 的 #poll=）
+    // ---------------------------------------------------------
+    function getPollIdFromUrl() {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("poll")) return searchParams.get("poll").trim();
+
+      if (window.location.hash && window.location.hash.includes("poll=")) {
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        if (hashParams.get("poll")) return hashParams.get("poll").trim();
+      }
+      return null;
+    }
+
+    function updateUrlWithPollId(pollId) {
+      // 產生標準 ?poll=P... 分享連結（CodePen iframe 內也安全不報錯）
+      let shareUrl = "";
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("poll", pollId);
+        shareUrl = url.toString();
+        window.history.replaceState({}, "", shareUrl);
+      } catch (e) {
+        // 若在嚴格沙盒 iframe 內，使用 hash 備援並組合標準網址顯示
+        window.location.hash = `poll=${pollId}`;
+        const base = window.location.href.split("#")[0].split("?")[0];
+        shareUrl = `${base}?poll=${pollId}`;
+      }
+      document.getElementById("shareUrlInput").value = shareUrl;
+    }
+
+    // ---------------------------------------------------------
+    // 圖片處理：HTML5 Canvas 自動 1:1 置中裁切 + 800x800px 壓縮
+    // ---------------------------------------------------------
+    function handleImageSelect(event, slot) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const TARGET_SIZE = 800;
+          const canvas = document.createElement("canvas");
+          canvas.width = TARGET_SIZE;
+          canvas.height = TARGET_SIZE;
+          const ctx = canvas.getContext("2d");
+
+          // 計算 1:1 置中裁切座標
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+
+          // 繪製並縮放至 800x800
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, TARGET_SIZE, TARGET_SIZE);
+
+          // 輸出壓縮後的 JPEG Base64 (品質 0.82，兼顧畫質與 GAS 傳輸速度)
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+
+          if (slot === "A") {
+            state.imageBase64A = compressedDataUrl;
+            document.getElementById("previewA").src = compressedDataUrl;
+            document.getElementById("previewA").classList.remove("hidden");
+            document.getElementById("placeholderA").classList.add("hidden");
+            const badge = document.getElementById("badgeA");
+            badge.textContent = "1:1 已就緒 ✓";
+            badge.className = "text-[11px] font-hud px-2 py-0.5 rounded bg-vice-pink/25 text-vice-pink border border-vice-pink/50";
+          } else {
+            state.imageBase64B = compressedDataUrl;
+            document.getElementById("previewB").src = compressedDataUrl;
+            document.getElementById("previewB").classList.remove("hidden");
+            document.getElementById("placeholderB").classList.add("hidden");
+            const badge = document.getElementById("badgeB");
+            badge.textContent = "1:1 已就緒 ✓";
+            badge.className = "text-[11px] font-hud px-2 py-0.5 rounded bg-vice-cyan/25 text-vice-cyan border border-vice-cyan/50";
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ---------------------------------------------------------
+    // 快速設定截止時間 (datetime-local 本地時間格式)
+    // ---------------------------------------------------------
+    function setQuickDeadline(minutesFromNow) {
+      const target = new Date(Date.now() + minutesFromNow * 60 * 1000);
+      const pad = (n) => String(n).padStart(2, "0");
+      const formatted = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}T${pad(target.getHours())}:${pad(target.getMinutes())}`;
+      document.getElementById("pollEndTime").value = formatted;
+    }
+
+    // ---------------------------------------------------------
+    // GAS API 通訊層 (使用 text/plain 避開 CORS Preflight)
+    // ---------------------------------------------------------
+    async function callGasApi(method, payload = {}) {
+      if (state.useMockMode) {
+        return mockGasHandler(method, payload);
+      }
+
+      if (method === "GET") {
+        const url = new URL(GAS_API_URL);
+        Object.entries(payload).forEach(([k, v]) => url.searchParams.set(k, v));
+        const res = await fetch(url.toString(), { method: "GET" });
+        return await res.json();
+      } else {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        return await res.json();
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 建立新投票 (POST -> GAS -> Google Drive + Sheets)
+    // ---------------------------------------------------------
+    async function submitCreatePoll() {
+      const question = document.getElementById("pollQuestion").value.trim();
+      const labelA = document.getElementById("labelA").value.trim() || "選項 A";
+      const labelB = document.getElementById("labelB").value.trim() || "選項 B";
+      const endTimeRaw = document.getElementById("pollEndTime").value;
+
+      if (!question) {
+        return showBanner("請輸入決策投票題目！", "error");
+      }
+      if (!state.imageBase64A || !state.imageBase64B) {
+        return showBanner("請先拍攝或選擇 A 與 B 兩張照片！", "error");
+      }
+      if (!endTimeRaw) {
+        return showBanner("請設定開票截止時間！", "error");
+      }
+
+      const endTimestamp = new Date(endTimeRaw).getTime();
+      if (endTimestamp <= Date.now()) {
+        return showBanner("截止時間必須晚於現在時間！", "error");
+      }
+
+      const btn = document.getElementById("createPollBtn");
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin">⏳</span> <span>正在上傳照片至 Google Drive 並建立資料庫...</span>`;
+      showBanner("正在加密傳輸 800×800 影像至雲端圖床，請稍候...", "info");
+
+      const generatedPollId = "P" + Date.now();
+
+      try {
+        const res = await callGasApi("POST", {
+          action: "create",
+          pollId: generatedPollId,
+          question: question,
+          title: question,
+          labelA: labelA,
+          labelB: labelB,
+          imageA: state.imageBase64A,
+          imageB: state.imageBase64B,
+          endTime: new Date(endTimeRaw).toISOString()
+        });
+
+        const returnedPollId = res.pollId || (res.data && res.data.pollId) || generatedPollId;
+        showBanner("投票建立成功！已產生專屬分享網址。", "success");
+        await loadPoll(returnedPollId);
+      } catch (err) {
+        console.error(err);
+        showBanner("GAS 連線失敗，請檢查網路或切換右上角「GAS LIVE / DEMO」進行測試。", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>🚀 上傳雲端並產生專屬投票連結</span>`;
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 讀取投票資料並渲染畫面
+    // ---------------------------------------------------------
+    async function loadPoll(pollId) {
+      state.currentPollId = pollId;
+      updateUrlWithPollId(pollId);
+
+      document.getElementById("createView").classList.add("hidden");
+      document.getElementById("voteView").classList.remove("hidden");
+      document.getElementById("displayPollId").textContent = pollId;
+
+      try {
+        const res = await callGasApi("GET", { action: "get", pollId: pollId });
+        const poll = normalizePollData(res, pollId);
+
+        if (!poll) {
+          showBanner(`找不到編號 ${pollId} 的投票資料，請確認連結是否正確。`, "error");
+          return;
+        }
+
+        state.currentPoll = poll;
+        renderPollUI(poll);
+        startCountdown(poll);
+      } catch (err) {
+        console.error(err);
+        showBanner("讀取投票資料失敗，請確認 GAS 權限或嘗試切換測試模式。", "error");
+      }
+    }
+
+    async function refreshCurrentPoll() {
+      if (!state.currentPollId) return;
+      showBanner("正在與 Google Sheets 同步最新票數...", "info");
+      await loadPoll(state.currentPollId);
+      hideBanner();
+    }
+
+    // 相容不同 GAS 欄位命名的資料正規化
+    function normalizePollData(res, fallbackId) {
+      const raw = res.poll || res.data || res;
+      if (!raw || raw.error) return null;
+
+      return {
+        pollId: raw.pollId || fallbackId,
+        question: raw.question || raw.title || "未命名投票",
+        labelA: raw.labelA || "選項 A",
+        labelB: raw.labelB || "選項 B",
+        imageA: formatDriveImageUrl(raw.imageA || raw.imgA || raw.urlA),
+        imageB: formatDriveImageUrl(raw.imageB || raw.imgB || raw.urlB),
+        votesA: Number(raw.votesA ?? raw.countA ?? 0),
+        votesB: Number(raw.votesB ?? raw.countB ?? 0),
+        status: String(raw.status || "open").toLowerCase(),
+        endTime: raw.endTime || raw.deadline
+      };
+    }
+
+    // 自動修正 Google Drive 分享連結為可直接嵌入 <img> 的高畫質直連網址
+    function formatDriveImageUrl(url) {
+      if (!url) return "";
+      if (url.startsWith("data:image")) return url;
+      const match = url.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{20,})/);
+      if (match && match[1]) {
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
+      }
+      return url;
+    }
+
+    // ---------------------------------------------------------
+    // 渲染投票進行中 vs 已截止開票畫面
+    // ---------------------------------------------------------
+    function renderPollUI(poll) {
+      document.getElementById("viewQuestion").textContent = poll.question;
+      document.getElementById("viewLabelA").textContent = poll.labelA;
+      document.getElementById("viewLabelB").textContent = poll.labelB;
+      document.getElementById("viewImgA").src = poll.imageA;
+      document.getElementById("viewImgB").src = poll.imageB;
+
+      const endDate = new Date(poll.endTime);
+      document.getElementById("viewDeadlineText").textContent = isNaN(endDate.getTime())
+        ? poll.endTime
+        : endDate.toLocaleString("zh-TW", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+      const totalVotes = poll.votesA + poll.votesB;
+      document.getElementById("totalVotesText").textContent = totalVotes;
+
+      const isExpired = !isNaN(endDate.getTime()) && Date.now() >= endDate.getTime();
+      const isClosed = poll.status === "closed" || poll.status === "ended" || isExpired;
+
+      // 檢查本機是否已投過此 pollId
+      const localChoice = localStorage.getItem(`vice_voted_${poll.pollId}`);
+      document.getElementById("votedCheckA").classList.toggle("hidden", localChoice !== "A");
+      document.getElementById("votedCheckB").classList.toggle("hidden", localChoice !== "B");
+
+      if (isClosed) {
+        // --- 開票模式：鎖定按鈕、展開百分比與勝出皇冠 ---
+        document.getElementById("livePulse").className = "w-2.5 h-2.5 rounded-full bg-vice-gold";
+        const badge = document.getElementById("pollStateBadge");
+        badge.textContent = "RESULTS REVEALED // 已鎖定開票";
+        badge.className = "font-cyber text-xs tracking-widest uppercase text-vice-gold";
+
+        document.getElementById("voteBtnA").classList.add("hidden");
+        document.getElementById("voteBtnB").classList.add("hidden");
+        document.getElementById("resultBoxA").classList.remove("hidden");
+        document.getElementById("resultBoxB").classList.remove("hidden");
+
+        const pctA = totalVotes === 0 ? 0 : Math.round((poll.votesA / totalVotes) * 100);
+        const pctB = totalVotes === 0 ? 0 : 100 - pctA;
+
+        document.getElementById("pctA").textContent = `${pctA}%`;
+        document.getElementById("countA").textContent = `${poll.votesA} 票`;
+        document.getElementById("barA").style.width = `${pctA}%`;
+
+        document.getElementById("pctB").textContent = `${pctB}%`;
+        document.getElementById("countB").textContent = `${poll.votesB} 票`;
+        document.getElementById("barB").style.width = `${pctB}%`;
+
+        // 判定勝出方
+        const cardA = document.getElementById("cardOptionA");
+        const cardB = document.getElementById("cardOptionB");
+        document.getElementById("winnerTagA").classList.add("hidden");
+        document.getElementById("winnerTagB").classList.add("hidden");
+        cardA.classList.remove("ring-2", "ring-vice-gold", "opacity-65");
+        cardB.classList.remove("ring-2", "ring-vice-gold", "opacity-65");
+
+        if (poll.votesA > poll.votesB) {
+          document.getElementById("winnerTagA").classList.remove("hidden");
+          cardA.classList.add("ring-2", "ring-vice-gold");
+          cardB.classList.add("opacity-65");
+        } else if (poll.votesB > poll.votesA) {
+          document.getElementById("winnerTagB").classList.remove("hidden");
+          cardB.classList.add("ring-2", "ring-vice-gold");
+          cardA.classList.add("opacity-65");
+        }
+      } else {
+        // --- 投票進行中模式 ---
+        document.getElementById("livePulse").className = "w-2.5 h-2.5 rounded-full bg-vice-pink animate-ping";
+        const badge = document.getElementById("pollStateBadge");
+        badge.textContent = "LIVE VOTING // 投票進行中";
+        badge.className = "font-cyber text-xs tracking-widest uppercase text-vice-pink";
+
+        const btnA = document.getElementById("voteBtnA");
+        const btnB = document.getElementById("voteBtnB");
+        btnA.classList.remove("hidden");
+        btnB.classList.remove("hidden");
+        document.getElementById("resultBoxA").classList.add("hidden");
+        document.getElementById("resultBoxB").classList.add("hidden");
+        document.getElementById("winnerTagA").classList.add("hidden");
+        document.getElementById("winnerTagB").classList.add("hidden");
+
+        if (localChoice) {
+          btnA.disabled = true;
+          btnB.disabled = true;
+          btnA.textContent = localChoice === "A" ? "✓ 已完成投票 (等待開票)" : "已鎖定";
+          btnB.textContent = localChoice === "B" ? "✓ 已完成投票 (等待開票)" : "已鎖定";
+        } else {
+          btnA.disabled = false;
+          btnB.disabled = false;
+          btnA.textContent = "⚡ 投給 A";
+          btnB.textContent = "⚡ 投給 B";
+        }
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 即時每秒倒數計時器（時間一到自動切換至開票模式）
+    // ---------------------------------------------------------
+    function startCountdown(poll) {
+      if (state.countdownTimer) clearInterval(state.countdownTimer);
+
+      const display = document.getElementById("countdownDisplay");
+      const endMs = new Date(poll.endTime).getTime();
+
+      const tick = () => {
+        if (poll.status === "closed" || poll.status === "ended") {
+          display.textContent = "00:00:00 (已開票)";
+          clearInterval(state.countdownTimer);
+          return;
+        }
+
+        const diff = endMs - Date.now();
+        if (diff <= 0) {
+          display.textContent = "00:00:00 (開票時間到!)";
+          clearInterval(state.countdownTimer);
+          poll.status = "closed";
+          renderPollUI(poll);
+          return;
+        }
+
+        const totalSec = Math.floor(diff / 1000);
+        const days = Math.floor(totalSec / 86400);
+        const hrs = Math.floor((totalSec % 86400) / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = totalSec % 60;
+        const pad = (n) => String(n).padStart(2, "0");
+
+        display.textContent = days > 0
+          ? `${days}D ${pad(hrs)}:${pad(mins)}:${pad(secs)}`
+          : `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+      };
+
+      tick();
+      state.countdownTimer = setInterval(tick, 1000);
+    }
+
+    // ---------------------------------------------------------
+    // 執行投票 (POST choice: 'A' | 'B')
+    // ---------------------------------------------------------
+    async function castVote(choice) {
+      if (!state.currentPoll) return;
+      const pollId = state.currentPoll.pollId;
+
+      if (localStorage.getItem(`vice_voted_${pollId}`)) {
+        return showBanner("你已經投過這一題囉！靜待開票結果。", "info");
+      }
+
+      const btnA = document.getElementById("voteBtnA");
+      const btnB = document.getElementById("voteBtnB");
+      btnA.disabled = true;
+      btnB.disabled = true;
+      showBanner(`正在送出你對「選項 ${choice}」的一票...`, "info");
+
+      try {
+        const res = await callGasApi("POST", {
+          action: "vote",
+          pollId: pollId,
+          choice: choice
+        });
+
+        localStorage.setItem(`vice_voted_${pollId}`, choice);
+
+        // 更新本地票數並同步伺服器回傳值
+        if (res && (res.votesA !== undefined || (res.poll && res.poll.votesA !== undefined))) {
+          state.currentPoll = normalizePollData(res, pollId);
+        } else {
+          if (choice === "A") state.currentPoll.votesA += 1;
+          if (choice === "B") state.currentPoll.votesB += 1;
+        }
+
+        renderPollUI(state.currentPoll);
+        showBanner(`投票成功！你選擇了選項 ${choice}，時間到將自動開票。`, "success");
+      } catch (err) {
+        console.error(err);
+        btnA.disabled = false;
+        btnB.disabled = false;
+        showBanner("投票送出失敗，請稍後再試。", "error");
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 隱藏管理員開票彩蛋（點擊右上角 🌴 305 連續 3 次）
+    // ---------------------------------------------------------
+    function handleSecretTrigger() {
+      state.secretClicks += 1;
+      const badge = document.getElementById("secretClickBadge");
+      badge.textContent = state.secretClicks;
+      badge.classList.remove("hidden");
+
+      clearTimeout(state.secretTimer);
+      state.secretTimer = setTimeout(() => {
+        state.secretClicks = 0;
+        badge.classList.add("hidden");
+      }, 2000);
+
+      if (state.secretClicks >= 3) {
+        state.secretClicks = 0;
+        badge.classList.add("hidden");
+        openAdminModal();
+      }
+    }
+
+    function openAdminModal() {
+      const modal = document.getElementById("adminModal");
+      const idText = document.getElementById("adminPollIdText");
+      const statusText = document.getElementById("adminPollStatusText");
+      const forceBtn = document.getElementById("forceRevealBtn");
+
+      if (state.currentPoll) {
+        idText.textContent = state.currentPoll.pollId;
+        statusText.textContent = state.currentPoll.status === "closed" ? "已開票結束" : "進行中 (可提前開票)";
+        forceBtn.disabled = state.currentPoll.status === "closed";
+      } else {
+        idText.textContent = "尚未載入任何投票";
+        statusText.textContent = "目前位於建立頁面";
+        forceBtn.disabled = true;
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeAdminModal() {
+      document.getElementById("adminModal").classList.add("hidden");
+    }
+
+    async function adminForceClosePoll() {
+      if (!state.currentPoll) return;
+      const pollId = state.currentPoll.pollId;
+      const forceBtn = document.getElementById("forceRevealBtn");
+      forceBtn.disabled = true;
+      forceBtn.textContent = "⏳ 正在強制鎖定並開票...";
+
+      try {
+        await callGasApi("POST", {
+          action: "close",
+          pollId: pollId
+        });
+
+        state.currentPoll.status = "closed";
+        renderPollUI(state.currentPoll);
+        closeAdminModal();
+        showBanner("🔓 管理員已提前結束投票並公布最終開票結果！", "success");
+      } catch (err) {
+        console.error(err);
+        showBanner("提前開票請求失敗，請重試。", "error");
+      } finally {
+        forceBtn.disabled = false;
+        forceBtn.textContent = "🔓 立即提前結束並公布開票結果";
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 輔助功能：切換建立模式、複製連結、橫幅提示、CodePen 模擬引擎
+    // ---------------------------------------------------------
+    function switchToCreateMode() {
+      if (state.countdownTimer) clearInterval(state.countdownTimer);
+      state.currentPollId = null;
+      state.currentPoll = null;
+      document.getElementById("voteView").classList.add("hidden");
+      document.getElementById("createView").classList.remove("hidden");
+      try {
+        const cleanUrl = window.location.href.split("?")[0].split("#")[0];
+        window.history.replaceState({}, "", cleanUrl);
+      } catch (e) {}
+    }
+
+    async function copyShareUrl() {
+      const input = document.getElementById("shareUrlInput");
+      input.select();
+      try {
+        await navigator.clipboard.writeText(input.value);
+        showBanner("專屬投票網址已複製到剪貼簿！快傳到群組吧。", "success");
+      } catch (e) {
+        document.execCommand("copy");
+        showBanner("已選取並複製專屬投票網址！", "success");
+      }
+    }
+
+    function showBanner(msg, type = "info") {
+      const banner = document.getElementById("statusBanner");
+      const text = document.getElementById("statusText");
+      const icon = document.getElementById("statusIcon");
+
+      text.textContent = msg;
+      banner.classList.remove("hidden", "border-vice-cyan", "bg-vice-cyan/10", "text-vice-cyan", "border-vice-pink", "bg-vice-pink/15", "text-vice-pink", "border-emerald-400", "bg-emerald-500/15", "text-emerald-300");
+
+      if (type === "error") {
+        banner.classList.add("border-vice-pink", "bg-vice-pink/15", "text-vice-pink");
+        icon.textContent = "⚠️";
+      } else if (type === "success") {
+        banner.classList.add("border-emerald-400", "bg-emerald-500/15", "text-emerald-300");
+        icon.textContent = "✅";
+      } else {
+        banner.classList.add("border-vice-cyan", "bg-vice-cyan/10", "text-vice-cyan");
+        icon.textContent = "⚡";
+      }
+    }
+
+    function hideBanner() {
+      document.getElementById("statusBanner").classList.add("hidden");
+    }
+
+    // 切換 GAS 真實雲端模式 / CodePen 本地模擬模式
+    function toggleMockMode() {
+      state.useMockMode = !state.useMockMode;
+      const dot = document.getElementById("mockDot");
+      const label = document.getElementById("mockLabel");
+
+      if (state.useMockMode) {
+        dot.className = "w-2 h-2 rounded-full bg-vice-gold";
+        label.textContent = "DEMO MODE";
+        showBanner("已切換至【本地模擬測試模式】：資料暫存於瀏覽器，無需等待 GAS 上傳即可秒測拍照、倒數與開票！", "info");
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        label.textContent = "GAS LIVE";
+        showBanner("已切換回【GAS 雲端連線模式】：將真實上傳圖片至 Google Drive 並寫入 Google Sheets。", "success");
+      }
+    }
+
+    // 本地模擬引擎（供 CodePen 無外部網路依賴時完整驗證流程）
+    function mockGasHandler(method, payload) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const storageKey = `vice_mock_poll_${payload.pollId}`;
+          if (payload.action === "create") {
+            const record = {
+              pollId: payload.pollId,
+              question: payload.question,
+              labelA: payload.labelA,
+              labelB: payload.labelB,
+              imageA: payload.imageA,
+              imageB: payload.imageB,
+              votesA: 0,
+              votesB: 0,
+              status: "open",
+              endTime: payload.endTime
+            };
+            localStorage.setItem(storageKey, JSON.stringify(record));
+            resolve({ success: true, pollId: payload.pollId, poll: record });
+          } else if (payload.action === "get") {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+            resolve(saved ? { success: true, poll: saved } : { error: "Not found" });
+          } else if (payload.action === "vote") {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+            if (saved) {
+              if (payload.choice === "A") saved.votesA += 1;
+              if (payload.choice === "B") saved.votesB += 1;
+              localStorage.setItem(storageKey, JSON.stringify(saved));
+            }
+            resolve({ success: true, poll: saved });
+          } else if (payload.action === "close") {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+            if (saved) {
+              saved.status = "closed";
+              localStorage.setItem(storageKey, JSON.stringify(saved));
+            }
+            resolve({ success: true, poll: saved });
+          }
+        }, 350);
+      });
+    }
+  </script>
+</body>
+</html>
